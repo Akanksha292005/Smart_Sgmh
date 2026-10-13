@@ -4,4 +4,4 @@ anthropic>=0.40.0
 tzdata
 itsdangerous
 scikit-learn
-gunicom
+gunicorn
