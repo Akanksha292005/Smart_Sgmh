@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% block body %}<h2>My lab reports</h2><div class="c"><div class="tw"><table><tr><th>Test</th><th>Barcode</th><th>Status</th><th>Report</th><th>Visit</th></tr>
+{% for s in rows %}<tr><td>{{ s.test }}</td><td>{{ s.barcode }}</td><td>{{ s.status }}</td><td>{{ s.report or '-' }}</td><td><a href="/visit/{{ s.code }}">{{ s.code }}</a></td></tr>{% else %}<tr><td colspan="5">No reports yet.</td></tr>{% endfor %}</table></div></div>{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% block body %}
+<h1 style="font-size:2rem">Request IPD admission</h1>
+<div class="tabs"><a href="/book">OPD appointment</a><a class="on" href="/admit">IPD admission</a></div>
+<p class="m">IPD means staying in hospital. Admission is available 24x7: you can send this request at any time and come any time.</p>
+<div class="em">Life-threatening problem? Do not use this form. Go straight to the Emergency gate (open 24x7) or call 112 / 108.</div>
+{% if emergency %}<div class="em" style="margin-top:10px">This sounds like it may be an emergency. Go to the Emergency gate now or call 112 / 108.</div>
+{% else %}<div class="wiz" style="margin-top:14px">
+<div class="stepc {{ 'done' if typ else 'on' }}"><div class="hd"><span class="num">1</span><b>Type of admission</b>{% if typ %}<span class="sum">{{ typ }}</span>{% endif %}</div>
+<div style="margin-top:10px"><a class="pill {{ 'sel' if typ=='Planned' }}" href="{{ u(type='Planned') }}">Planned</a><a class="pill {{ 'sel' if typ=='Urgent' }}" href="{{ u(type='Urgent') }}">Urgent</a></div>
+<p class="m"><b>Planned</b>: <span>a doctor has advised admission.</span> <b>Urgent</b>: <span>needs admission soon but is not an emergency.</span></p></div>
+<div class="stepc {{ 'done' if dept else ('on' if typ else 'todo') }}"><div class="hd"><span class="num">2</span><b>Department</b>{% if dept %}<span class="sum">{{ dept }}</span>{% endif %}</div>
+<form method="get" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><input type="hidden" name="type" value="{{ typ or '' }}"><input name="reason" value="{{ reason }}" placeholder="Reason for admission (optional)" style="flex:3;margin:0;min-width:220px"><button class="g" style="flex:1">Suggest department</button></form>
+{% if suggestion %}<p class="m"><span>Suggested</span>: <b>{{ suggestion }}</b></p>{% endif %}
+<div style="margin-top:8px">{% for x in depts %}<a class="pill {{ 'sel' if x==dept }}" href="{{ u(dept=x,doctor=None) }}">{{ x }}</a>{% endfor %}</div></div>
+<div class="stepc {{ 'done' if ward else ('on' if dept else 'todo') }}"><div class="hd"><span class="num">3</span><b>Ward type</b>{% if ward %}<span class="sum">{{ ward }}</span>{% endif %}</div>
+<div style="margin-top:10px">{% for w in wards %}<a class="pill {{ 'sel' if w==ward }}" href="{{ u(ward=w) }}">{{ w }}</a>{% endfor %}</div><p class="m">Your preference. The admission desk confirms the bed based on availability.</p></div>
+<div class="stepc {{ 'done' if ready else 'todo' }}"><div class="hd"><span class="num">4</span><b>Doctor</b><span class="sum">{{ doc.name if doc else 'Any available doctor' }}</span></div>
+{% if not dept %}<p class="m">Choose a department first.</p>{% else %}<div style="margin-top:10px"><a class="dcard {{ 'sel' if did=='auto' }}" href="{{ u(doctor='auto') }}"><div><b>Any available doctor</b><div class="m">Recommended</div></div><span class="m">The hospital assigns the doctor on duty.</span></a>
+{% for d in docs %}<a class="dcard {{ 'sel' if did==d.id|string }} {{ 'off' if d.code=='leave' }}" href="{{ u(doctor=d.id) }}"><div><b>{{ d.name }}</b><div class="m">{{ d.dept }}</div></div><span class="tag" style="background:{{ '#c0392b' if d.ipd=='On leave' else '#1e8e5a' }}">{{ d.ipd }}</span>{% if d.note %}<span class="m">{{ d.note }}</span>{% endif %}</a>{% endfor %}</div>{% endif %}</div>
+<div class="stepc {{ 'on' if ready else 'todo' }}"><div class="hd"><span class="num">5</span><b>Confirm</b></div>
+{% if not ready %}<p class="m">Complete the steps above to continue.</p>{% else %}<div class="tw"><table><tr><th>Type</th><td>{{ typ }}</td></tr><tr><th>Department</th><td>{{ dept }}</td></tr><tr><th>Ward type</th><td>{{ ward }}</td></tr><tr><th>Doctor</th><td>{{ doc.name if doc else 'Any available doctor' }}</td></tr></table></div>
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="reason" value="{{ reason }}"><input type="hidden" name="type" value="{{ typ }}"><input type="hidden" name="dept" value="{{ dept }}"><input type="hidden" name="ward" value="{{ ward }}"><input type="hidden" name="doctor" value="{{ did }}"><button>Request admission</button></form>
+<p class="m">You will get a QR code. Show it at the admission desk (reception) when you arrive, any time of day.</p>{% endif %}</div></div>{% endif %}{% endblock %}

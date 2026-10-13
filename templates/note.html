@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block body %}<h2>{{ a.code }}: {{ a.pname }}</h2><p class="m">Reason: {{ a.reason }}</p>
+<div class="c"><form method="post" action="/doctor/{{ a.code }}"><input type="hidden" name="csrf" value="{{ csrf() }}"><label>Diagnosis</label><input name="diagnosis" value="{{ n.diagnosis if n else '' }}">
+<label>Medicines (one per line: name, dose, duration)</label><textarea name="meds" rows="3">{{ n.meds if n else '' }}</textarea>
+<label>What to eat</label><input name="do_text" value="{{ n.do_text if n else '' }}"><label>What to avoid</label><input name="avoid_text" value="{{ n.avoid_text if n else '' }}">
+<label>Precautions</label><input name="care" value="{{ n.care if n else '' }}"><label>Follow-up date</label><input name="followup" value="{{ n.followup if n else '' }}">
+<button>Save and preview</button></form></div>
+{% if n %}<div class="c"><h2>Patient will see</h2><pre style="white-space:pre-wrap;font:inherit">{{ n.simplified }}</pre><p class="m">AI only rewrites wording. You approve; medicines and doses are never changed by AI.</p>
+{% if n.approved %}<span class="tag" style="background:var(--ok)">Approved</span>{% else %}<form method="post" action="/doctor/{{ a.code }}/approve"><input type="hidden" name="csrf" value="{{ csrf() }}"><button>Approve and send</button></form>{% endif %}</div>{% endif %}<div class="c"><h2>Order a lab test</h2><form method="post" action="/doctor/{{ a.code }}/order-test"><input type="hidden" name="csrf" value="{{ csrf() }}"><select name="test">{% for t in tests %}<option value="{{ t.name }}">{{ t.name }} ({{ t.category }})</option>{% endfor %}</select><button>Order test</button></form>
+{% for o in orders %}<p><b>{{ o.test }}</b> ({{ o.barcode }}): {{ o.status }}{% if o.report %} &middot; {{ o.report }}{% endif %}</p>{% endfor %}</div>
+{% endblock %}

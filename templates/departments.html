@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% block body %}<h2>Our departments</h2><div class="row">
+{% for d in deps %}<a class="c" href="/department/{{ d.dept }}" style="text-decoration:none;color:inherit"><h2>{{ d.dept }}</h2><p class="m"><b>{{ d.n }}</b> <span>doctors</span> &middot; <b>{{ d.av }}</b> <span>available</span></p></a>{% else %}<div class="c">No doctors found.</div>{% endfor %}</div>{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}{% block body %}
+<style>
+.dm{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:18px;align-items:start}@media(max-width:900px){.dm{grid-template-columns:1fr}}
+.dm .c{margin:0 0 14px}.dm h3{margin:0 0 6px;font-size:1.05rem}.dm .sub{margin:0 0 10px}
+.bt{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bt button{padding:11px 10px;font-size:.88rem;line-height:1.25}
+.ok{background:var(--ok)}.wn{background:#6b7570}.cr{background:var(--no)}.gh{background:var(--p3);color:var(--p)}
+.vit{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.vit input{margin:2px 0 8px;padding:8px}
+.res{padding:12px 14px;border-radius:12px;font-weight:600;margin-bottom:12px;display:none}.res.good{display:block;background:#e4f5ec;color:#17724a;border:1px solid #b5e0c8}.res.bad{display:block;background:#fde9e8;color:#8f1f1b;border:1px solid #f2b8b5}
+.al{border-left:6px solid var(--bd)}.al.critical{border-left-color:#d32f2f;background:#fff5f4}.al.warning{border-left-color:#6b7570;background:#f1f3f2}.al.acknowledged,.al.closed{opacity:.75;border-left-color:var(--ok);background:var(--c)}
+@media(prefers-color-scheme:dark){.al.critical{background:#3a1e1e}.al.warning{background:#f1f3f2}.al.acknowledged{background:var(--c)}}
+.al ul{margin:6px 0 0;padding-left:18px}.pulse{animation:flash 1s infinite}@keyframes flash{50%{box-shadow:0 0 0 6px rgba(211,47,47,.35)}}
+#ov{position:fixed;inset:0;background:rgba(90,10,10,.62);display:none;align-items:center;justify-content:center;z-index:99;animation:bg 1s infinite}@keyframes bg{50%{background:rgba(190,20,20,.92)}}
+#ov .box{background:#fff;color:#2b0d0d;border-radius:20px;max-width:560px;width:92%;padding:28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}#ov h2{margin:0 0 6px;font-size:1.9rem;color:#b71c1c}#ov p{font-size:1.05rem;margin:10px 0 18px}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.85rem;margin:6px 0 16px}.flow span{background:var(--p3);color:var(--p);border-radius:99px;padding:5px 12px;font-weight:600}.flow i{color:var(--m);font-style:normal}
+</style>
+<h2 style="margin-top:6px">Live Safety Demo <span class="m">(for judges)</span></h2>
+<div class="flow"><span>1. Something goes wrong</span><i>&rarr;</i><span>2. System checks automatically</span><i>&rarr;</i><span>3. Alert pops up for doctor</span><i>&rarr;</i><span>4. Doctor acknowledges</span><i>&rarr;</i><span>5. No reply in time = escalated to supervisor</span></div>
+<div id="res" class="res"></div>
+<details class="c"><summary>How to show this to judges (2 minutes)</summary><ol>
+<li>Press Stable patient: no alert, the score is normal.</li><li>Press Getting worse: a warning alert appears for the doctor.</li><li>Press Critical patient: a red alert pops up with a sound. Then press Acknowledge.</li>
+<li>Lab: the Wrong sample button is blocked before a wrong report can reach a patient.</li><li>Pharmacy: expired medicine, a medicine that is not prescribed, an allergy medicine and a second click on the correct medicine (duplicate) are all blocked.</li>
+<li>Press Critical patient again, do not acknowledge, then press Nobody responded in time: the alert goes to the supervisor.</li><li>Finally open the pages below. Use Reset demo to start again.</li></ol>
+<a class="btn g" href="/alerts">Alerts</a> <a class="btn g" href="/patient/AP-DEMO1">Patient summary</a> <a class="btn g" href="/navigate">Hospital map</a></details>
+<div class="dm">
+ <div>
+  <div class="c"><h3>1. Nurse: record patient vitals</h3><p class="m sub">Patient: <b id="pn">...</b> (<span id="pc">{{ A }}</span>) &middot; Doctor: <span id="pd"></span></p>
+   <div class="bt"><button class="ok" data-a="vitals_normal">Stable patient<br><small>BP 120/80 &middot; SpO2 98</small></button><button class="wn" data-a="vitals_warning">Getting worse<br><small>Pulse 112 &middot; SpO2 94</small></button><button class="cr" data-a="vitals_critical" style="grid-column:span 2">Critical patient<br><small>BP 86/54 &middot; SpO2 88 &middot; Pulse 134 &middot; Temp 39.4</small></button></div>
+   <details style="margin-top:10px"><summary class="m" style="cursor:pointer">Enter your own readings</summary>
+    <div class="vit" style="margin-top:8px"><div><label class="m">BP sys</label><input id="v1" type="number" value="120"></div><div><label class="m">BP dia</label><input id="v2" type="number" value="80"></div><div><label class="m">Pulse</label><input id="v3" type="number" value="80"></div><div><label class="m">SpO2</label><input id="v4" type="number" value="97"></div><div><label class="m">Temp</label><input id="v5" type="number" step="0.1" value="37"></div></div>
+    <button class="gh" onclick="custom()">Save and score</button></details></div>
+  <div class="c"><h3>2. Lab: attach a report</h3><p class="m sub">System compares the sample barcode with the patient.</p>
+   <div class="bt"><button class="ok" data-a="report_right">Correct sample<br><small>belongs to this patient</small></button><button class="cr" data-a="report_wrong">Wrong sample<br><small>belongs to another patient</small></button></div></div>
+  <div class="c"><h3>3. Pharmacy: give medicine</h3><p class="m sub">Prescription: Paracetamol, Amoxicillin &middot; Allergy on file: <b id="al">-</b></p>
+   <div class="bt"><button class="ok" data-a="med_ok">Correct medicine<br><small>click twice = duplicate</small></button><button class="cr" data-a="med_expired">Expired medicine</button><button class="cr" data-a="med_wrong">Not prescribed<br><small>Pantoprazole</small></button><button class="cr" data-a="med_allergy">Allergy medicine<br><small>Amoxicillin</small></button></div></div>
+  <div class="c"><h3>4. Escalation and reset</h3><div class="bt"><button class="wn" data-a="escalate_now">Nobody responded in time<br><small>fast-forward</small></button><button class="gh" data-a="reset">Reset demo</button></div>
+   <p class="m" style="margin-bottom:0">Family view: <a href="/patient/{{ A }}" target="_blank">patient summary page</a> (vitals chart, alerts for staff).</p></div>
+ </div>
+ <div>
+  <div class="c"><h3>Doctor / nurse station: live alerts <span class="live"></span></h3><p class="m sub">Updates every 2 seconds. A red full-screen pop-up with sound appears for every new alert.</p><div id="vt"></div></div>
+  <div id="als"></div>
+ </div>
+</div>
+<div id="ov"><div class="box"><div style="font-size:3rem">&#1f6b4a;</div><h2 id="ot">CRITICAL ALERT</h2><p id="om"></p><button class="cr" id="oa" style="font-size:1.1rem">Acknowledge</button> <button class="gh" onclick="document.getElementById('ov').style.display='none'">Close</button></div></div>
+<script>
+window.NO_TOAST=true;const CSRF="{{ csrf() }}";let seen=null,first=true,audio=null,cur=null;
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();let t=audio.currentTime;for(let i=0;i<4;i++){const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=i%2?660:880;o.connect(g);g.connect(audio.destination);g.gain.setValueAtTime(.18,t+i*.28);g.gain.exponentialRampToValueAtTime(.001,t+i*.28+.25);o.start(t+i*.28);o.stop(t+i*.28+.26)}}catch(e){}}
+async function post(url,d){const b=new URLSearchParams({csrf:CSRF,...d});const r=await fetch(url,{method:'POST',body:b});return r.json()}
+async function act(a){const j=await post('/demo/act',{action:a});const e=$('res');e.className='res '+(j.ok?'good':'bad');e.textContent=(j.ok?'\u2705 ':'\u26A0\uFE0F ')+j.msg;scroll(0,0);load()}
+function custom(){const f={action:'vitals_custom',bp_sys:v1.value,bp_dia:v2.value,pulse:v3.value,spo2:v4.value,temp:v5.value};post('/demo/act',f).then(j=>{const e=$('res');e.className='res '+(j.ok?'good':'bad');e.textContent=(j.ok?'\u2705 ':'\u26A0\uFE0F ')+j.msg;load()})}
+document.querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));
+async function ack(id){await post('/demo/ack',{id});$('ov').style.display='none';load()}
+$('oa').onclick=()=>cur&&ack(cur);
+function show(a){cur=a.id;$('ot').textContent=(a.level==='critical'?'CRITICAL ALERT: ':'WARNING: ')+a.kind;$('om').textContent=a.message;$('ov').style.display='flex';beep()}
+async function load(){let d;try{d=await (await fetch('/demo/state')).json()}catch(e){return}
+ $('pn').textContent=d.patient.name;$('pd').textContent=d.patient.doctor;$('al').textContent=d.patient.allergies||'none';
+ $('vt').innerHTML=d.vitals.length?'<div class="tw"><table><tr><th>Time</th><th>BP</th><th>Pulse</th><th>SpO2</th><th>Temp</th><th>Score</th></tr>'+d.vitals.map(v=>`<tr><td>${v.ts}</td><td>${v.bp}</td><td>${v.pulse}</td><td>${v.spo2}</td><td>${v.temp}</td><td><span class="lvl lv-${v.level}">${v.score} ${v.level}</span></td></tr>`).join('')+'</table></div>':'<p class="m">No readings yet. Use the buttons on the left.</p>';
+ $('als').innerHTML=d.alerts.length?d.alerts.map(a=>{const live=a.status==='open'||a.status==='escalated';return `<div class="c al ${live?a.level:a.status} ${live&&a.level==='critical'?'pulse':''}"><span class="lvl lv-${a.level}">${a.level}</span> <b>${esc(a.kind)}</b> <span class="lvl" style="background:${a.status==='escalated'?'#d32f2f;color:#fff':'#eef3f0;color:var(--p2)'}">${a.status==='escalated'?'ESCALATED TO SUPERVISOR':a.status}</span> <span class="m">${a.ts}</span><p style="margin:8px 0">${esc(a.message)}</p><ul class="m">${a.steps.map(s=>`<li>${s[0]} ${esc(s[1])}</li>`).join('')}</ul>${live?`<button style="margin-top:10px" onclick="ack(${a.id})">Acknowledge (doctor)</button>`:''}</div>`}).join(''):'<div class="c m">No alerts. Everything is normal.</div>';
+ const open=d.alerts.filter(a=>a.status==='open'||a.status==='escalated'),K=a=>a.id+':'+a.steps.length+':'+a.level,keys=new Set(open.map(K));
+ if(seen===null)seen=keys;else{const f=open.find(a=>a.status==='open'&&!seen.has(K(a)));seen=keys;if(f)show(f)}}
+load();setInterval(load,2000);
+</script>{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% block body %}
+<div class="hero"><span class="eyebrow">Sanjay Gandhi Memorial Hospital &middot; Rewa</span><h1>Your hospital visit, clear at every step</h1>
+<p>Book from home, skip the token queue and follow the patient's journey live. Advice and reports reach your phone in simple language.</p>
+<div class="btns"><a class="btn" href="/book">Book OPD appointment</a><a class="btn g" href="/admit">Request IPD admission</a><a class="btn g" href="/track">Track a patient</a></div>
+<div class="stats"><div><b>1100</b>Hospital beds</div><div><b>24x7</b>IPD admission and emergency</div><div><b>Mon-Sat</b>OPD 8 AM - 4 PM</div><div><b>14</b>Specialities</div></div></div>
+<div class="em">Emergency? Go straight to the Emergency gate or call 112 / 108. Do not wait for this app.</div>
+<div class="sec"><h2>Choose your service</h2></div><div class="svc" style="margin-top:12px">
+<div class="c"><span class="step">OPD</span><div class="big">Outpatient consultation</div><p class="m">See a doctor and go home the same day.</p><p><b>Mon-Sat, 8 AM - 4 PM</b></p><a class="btn" href="/book">Book OPD appointment</a> <a class="btn g" href="/opd">Learn more</a></div>
+<div class="c ip"><span class="step" style="color:var(--ac)">IPD</span><div class="big">Admission to hospital</div><p class="m">Stay in hospital for treatment, with live tracking for the family.</p><p><b>Admission 24x7, any day</b></p><a class="btn" href="/admit" style="background:var(--ac)">Request IPD admission</a> <a class="btn g" href="/ipd">Learn more</a></div></div>
+<div class="sec"><h2>How it works</h2></div><div class="row" style="margin-top:12px">
+<div class="c"><span class="step">STEP 1</span><h3>Book</h3><p class="m">Register, pick a doctor and get a QR code.</p></div>
+<div class="c"><span class="step">STEP 2</span><h3>Track</h3><p class="m">Every step is recorded with time and staff role. Family sees the live status.</p></div>
+<div class="c"><span class="step">STEP 3</span><h3>Understand</h3><p class="m">Doctor-approved advice in simple language, and lab reports in one place.</p></div>
+<div class="c"><span class="step">STEP 4</span><h3>AI safety net</h3><p class="m">Delay alerts and hospital-approved answers. AI never decides treatment.</p></div></div>
+<div class="sec"><h2>Quick services</h2></div><div class="row" style="margin-top:12px">
+<a class="c" href="/departments" style="text-decoration:none;color:inherit"><div class="ic">&#127973;</div><h3>Departments</h3><p class="m">Browse all OPD specialities.</p></a>
+<a class="c" href="/doctors" style="text-decoration:none;color:inherit"><div class="ic">&#129658;</div><h3>Doctor availability</h3><p class="m">See who is available right now.</p></a>
+<a class="c" href="/lab-services" style="text-decoration:none;color:inherit"><div class="ic">&#129514;</div><h3>Lab and Tests</h3><p class="m">Test list, preparation and report time.</p></a>
+<a class="c" href="/medical-store" style="text-decoration:none;color:inherit"><div class="ic">&#128138;</div><h3>Medical Store</h3><p class="m">Check medicine stock before you go.</p></a>
+<a class="c" href="/assistant" style="text-decoration:none;color:inherit"><div class="ic">&#129302;</div><h3>AI Assistant</h3><p class="m">Hospital-approved answers with sources.</p></a>
+<a class="c" href="/help" style="text-decoration:none;color:inherit"><div class="ic">&#10067;</div><h3>Help</h3><p class="m">Guides for patients and families.</p></a></div>
+{% if docs %}<div class="sec"><h2>Doctors on duty</h2><a href="/doctors">View all</a></div><div class="row" style="margin-top:12px">{% for d in docs %}{% include '_doc.html' %}{% endfor %}</div>{% endif %}
+<details class="c" style="margin-top:36px"><summary>Demo access for this prototype</summary><p class="m">Phone / password: patient 9000000001 / pat123 &middot; reception 9000000010 / rec123 &middot; doctor (Medicine) 9000000041 / doc123 &middot; lab 9000000020 / lab123 &middot; pharmacy 9000000030 / ph123 &middot; admin 9000000000 / admin123</p></details>{% endblock %}

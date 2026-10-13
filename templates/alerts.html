@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block body %}<h2>Safety alerts</h2>
+<p class="m">An alert not acknowledged within {{ esc }} min is automatically escalated to the supervisor. Alerts support staff; the doctor decides the action.</p>
+{% for r in rows %}<div class="c" style="{{ 'border-left:5px solid var(--no)' if r.status in ('open','escalated') else '' }}">
+<span class="lvl lv-{{ r.level }}">{{ r.level }}</span> <b>{{ r.kind.replace('_',' ') }}</b> &middot; <a href="/patient/{{ r.code }}">{{ r.pname }} ({{ r.code }})</a> &middot; <span class="lvl" style="background:#eef3f0;color:var(--p2)">{{ r.status }}</span> <span class="m">{{ r.ts }}</span>
+<p>{{ r.message }}</p><details {{ 'open' if r.status in ('open','escalated') }}><summary class="m">Agent steps</summary><ul class="tl">{% for s in r.steps %}<li><span class="m">{{ s[0][11:] }}</span> {{ s[1] }}</li>{% endfor %}</ul></details>
+{% if r.status in ('open','escalated') %}<form method="post" action="/alerts/{{ r.id }}/ack" style="display:flex;gap:8px"><input type="hidden" name="csrf" value="{{ csrf() }}"><input name="note" placeholder="Action taken (optional)"><button>Acknowledge</button></form>{% endif %}
+{% if r.status=='acknowledged' %}<form method="post" action="/alerts/{{ r.id }}/close"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="g">Close</button></form>{% endif %}</div>
+{% else %}<div class="c m">No alerts.</div>{% endfor %}{% endblock %}

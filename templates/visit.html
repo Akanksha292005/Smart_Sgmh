@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block body %}
+<h2><span class="live"></span><span>Visit</span> {{ a.code }} <span class="tag" id="st" style="background:var(--p)">...</span></h2>
+<p class="m"><span>{{ a.dept }}</span> &middot; <span>{{ a.doctor }}</span> &middot; {% if a.kind=='IPD' %}<span>{{ a.ward }}</span>{% else %}{{ a.date }} {{ a.slot }}{% endif %} &middot; <span>updates automatically every 4 seconds</span></p>
+<p><a class="btn g" href="/patient/{{ a.code }}"><span>Full patient summary</span></a></p>
+<div id="q" class="c" style="display:none"></div>
+<div class="row"><div class="c"><h2>Live journey</h2><div id="tl"></div><p class="m" id="lu"></p></div>
+<div class="c"><h2>Doctor's advice</h2><div id="adv" class="m">Not available yet. It appears after the doctor approves.</div><p><a id="rx" class="btn g noprint" style="display:none" href="/rx/{{ a.code }}">Print / Save as PDF</a></p></div></div>
+<div class="c"><h2>Lab samples and reports</h2><div id="sm" class="m">No samples.</div><p class="m">Report time is an estimate and depends on the lab.</p></div>
+{% include '_findway.html' %}
+<script>
+const CPS={{ cps|tojson }};const E=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function load(){let r;try{r=await fetch('/api/visit/{{ a.code }}');}catch(e){return}if(!r.ok)return;const d=await r.json();
+document.getElementById('st').textContent=d.status;const seen={};d.events.forEach(e=>seen[e.cp]=e.ts);const last=d.events.length?d.events[d.events.length-1].cp:null;
+document.getElementById('tl').innerHTML=CPS.map(c=>'<div class="stp '+(seen[c]?(c===last?'cur':'on'):'')+'"><span class="dot"></span><div><b>'+tr(c)+'</b><span class="m">'+(seen[c]||'')+'</span></div></div>').join('');
+document.getElementById('lu').innerHTML=d.last?('Last update: '+E(d.last)+(d.stale?'. <b>This looks old, please ask staff to confirm.</b>':'')):'Waiting for first scan.';
+const q=document.getElementById('q');if(d.pos!==null){q.style.display='block';q.innerHTML='<b>Token '+d.token+'</b> &middot; '+d.pos+' patient(s) ahead &middot; estimated wait about '+d.est_min+' min <span class="m">(estimate)</span>'+(d.avg_wait?'<br><span class="m">Recent average wait: '+d.avg_wait+' min</span>':'')}else q.style.display='none';
+const adv=document.getElementById('adv');if(d.advice){adv.className='';adv.innerHTML='<pre style="white-space:pre-wrap;font:inherit;margin:0">'+E(d.advice)+'</pre>';document.getElementById('rx').style.display='inline-block'}
+document.getElementById('sm').innerHTML=d.samples.length?d.samples.map(s=>'<p><b>'+E(s.test)+'</b> ('+E(s.barcode)+'): '+E(s.status)+' <span class="m">updated '+E(s.ts)+'</span>'+(s.report?'<br>Report: '+E(s.report):'')+'</p>').join(''):'No samples.';}
+load();setInterval(load,4000);
+</script>{% endblock %}

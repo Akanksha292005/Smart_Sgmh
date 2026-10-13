@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block body %}<h2>AI Information Assistant</h2>
+<p class="m">Answers only from hospital-approved information (RAG). It does not diagnose or give medical advice. Sources are shown under every answer.</p>
+<div class="c"><div id="chat" class="chat"><div class="bub b">Hello! Ask about OPD timings, emergency, blood bank, tracking a patient or booking.</div></div>
+<div><span class="chip" onclick="go(this)">What are the OPD timings?</span><span class="chip" onclick="go(this)">Emergency services</span><span class="chip" onclick="go(this)">How do I get admitted (IPD)?</span><span class="chip" onclick="go(this)">How do I track my patient?</span><span class="chip" onclick="go(this)">Why is my report delayed?</span></div>
+<div style="display:flex;gap:8px;margin-top:8px"><input id="qi" placeholder="Type your question" style="margin:0" onkeydown="if(event.key==='Enter')ask()"><button onclick="ask()" style="white-space:nowrap">Ask</button></div></div>
+<script>const C=document.getElementById('chat');
+function add(c,t,s){const d=document.createElement('div');d.className='bub '+c;d.textContent=t;if(s&&s.length){const m=document.createElement('div');m.className='m';m.textContent=tr('Source')+': '+s.map(tr).join(', ');d.appendChild(m)}C.appendChild(d);C.scrollTop=C.scrollHeight}
+function go(e){document.getElementById('qi').value=e.textContent;ask()}
+async function ask(){const i=document.getElementById('qi'),v=i.value.trim();if(!v)return;add('u',v);i.value='';const f=new FormData();f.append('csrf','{{ csrf() }}');f.append('q',v);
+try{const r=await fetch('/api/ask',{method:'POST',body:f});const d=await r.json();add(d.emergency?'e':'b',d.answer,d.sources)}catch(e){add('b',tr('Network problem. Please try again.'))}}</script>{% endblock %}

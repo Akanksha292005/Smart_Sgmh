@@ -1,0 +1,3 @@
+<div class="c noprint"><h3>Find your way inside the hospital</h3><p class="m">Tap a place to see the route from the main entrance.</p>
+{% set rm = room_for(a.dept) %}{% if rm %}<a class="pill" href="/navigate?from=gate_main&to={{ rm }}">Doctor's room</a>{% endif %}
+<a class="pill" href="/navigate?from=gate_main&to=reg">Registration</a><a class="pill" href="/navigate?from=gate_main&to=path">Pathology Lab</a><a class="pill" href="/navigate?from=gate_main&to=radio">X-ray / CT</a><a class="pill" href="/navigate?from=gate_main&to=pharm">Pharmacy</a><a class="pill" href="/navigate?from=gate_main&to=bb">Blood Bank</a><a class="pill" href="/navigate?from=gate_main&to=icu">ICU</a><a class="pill" href="/navigate?from=gate_main&to=er">Emergency</a></div>

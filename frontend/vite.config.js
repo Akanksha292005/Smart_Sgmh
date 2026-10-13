@@ -1,0 +1,3 @@
+import { defineConfig } from "vite"; import react from "@vitejs/plugin-react"; import tailwind from "@tailwindcss/vite";
+const T = "http://127.0.0.1:5000", P = ["/api", "/static", "/navigate", "/demo", "/admit", "/opd", "/ipd", "/mine", "/appt", "/visit", "/qr", "/login", "/register", "/logout", "/reception", "/doctor", "/lab", "/pharmacy", "/vitals", "/alerts", "/patient", "/rx", "/lang", "/about", "/help", "/reports", "/scan", "/scan", "/admin", "/medical-store", "/lab-services", "/departments", "/department"];
+export default defineConfig({ base: "/app/", plugins: [react(), tailwind()], server: { proxy: Object.fromEntries(P.map((p) => [p, T])) } });
