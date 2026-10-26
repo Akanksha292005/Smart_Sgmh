@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% block body %}<style>.slip{max-width:560px;margin:0 auto;background:#fff;border:2px solid var(--p2);border-radius:12px;padding:20px}.slip h2{margin:0;text-align:center}.slip td,.slip th{padding:5px 8px;font-size:.92rem}.slip th{background:none;width:34%}@media print{body{background:#fff}.slip{border:1px solid #000}}</style>
+<div class="slip"><h2>Sanjay Gandhi Memorial Hospital, Rewa</h2><p class="m" style="text-align:center;margin:2px 0 10px">OPD registration slip &middot; 07662-241655</p>
+<div style="display:flex;gap:14px;align-items:center"><img src="/qr/{{ a.code }}.png" width="120" alt="QR"><div><div class="m">Appointment code</div><div class="big">{{ a.code }}</div>{% if a.token %}<div class="m">Token</div><div class="big">{{ a.token }}</div>{% endif %}</div></div>
+<table style="margin-top:8px"><tr><th>Patient</th><td><b>{{ a.pname }}</b> ({{ pdesc(a) }})</td></tr>{% if a.uhid %}<tr><th>UHID</th><td>{{ a.uhid }}</td></tr>{% endif %}{% if p and p.guardian_name %}<tr><th>Guardian</th><td>{{ p.guardian_name }}</td></tr>{% endif %}
+<tr><th>Department</th><td>{{ a.dept }}</td></tr><tr><th>Doctor</th><td>{{ a.doctor }}</td></tr><tr><th>Date / time</th><td>{{ a.date }} {{ a.slot }}</td></tr>
+{% set rm = room_info(a.dept) %}{% if rm %}<tr><th>Room</th><td>{{ rm.name }}, {{ rm.floor }}</td></tr>{% endif %}
+<tr><th>Category</th><td>{{ a.pcat or 'General' }}</td></tr>{% if prio %}<tr><th>Priority</th><td>{{ prio|join(', ') }}</td></tr>{% endif %}{% if a.pallergy %}<tr><th>Allergy</th><td><b>{{ a.pallergy }}</b></td></tr>{% endif %}</table>
+{% if bring %}<b>Please bring</b><ul style="margin:4px 0 8px;font-size:.9rem">{% for x in bring %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+<p class="m" style="font-size:.8rem">{{ fee_note }} Arrive 15 minutes early. Emergency: 112 / 108.</p></div>
+<p class="noprint" style="text-align:center;margin-top:14px"><button onclick="window.print()">Print</button></p>{% endblock %}

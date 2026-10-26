@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block body %}<p><a href="/departments">&larr; Departments</a></p><h2>{{ name }}</h2><div class="row">{% for d in docs %}{% include '_doc.html' %}{% endfor %}</div>{% endblock %}

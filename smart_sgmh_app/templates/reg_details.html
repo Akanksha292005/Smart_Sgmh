@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block body %}<div style="max-width:860px;margin:0 auto">
+<div class="wiz2"><span class="done">1 Login</span>{% if nxt.startswith('/admit') %}<span class="done">2 Patient chosen</span><span class="on">3 Registration</span><span>4 Admission details</span>{% else %}<span class="done">2 Doctor chosen</span><span class="on">3 Registration</span><span>4 Choose time</span>{% endif %}</div>
+<h1 style="font-size:2rem;margin-top:10px">Registration{% if doc %}: {{ doc.name }}{% endif %}</h1>
+<p class="m">{% if doc %}You are booking with <b>{{ doc.name }}</b> ({{ doc.dept }}). {% endif %}The hospital needs these details once. {% if need_pw %}You also set a password, so nobody else can open your account.{% endif %} After you save, you get your UHID and go straight to {{ 'the admission request' if nxt.startswith('/admit') else 'choosing a time' }}.</p>
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="next" value="{{ nxt }}"><input type="hidden" name="pid" value="{{ pid }}">
+{% if need_pw %}<div class="c" style="border-left:4px solid var(--p)"><h2 style="font-size:1.05rem;margin-top:0">Set your password</h2><p class="m">Next time you log in with your mobile number, an OTP and this password.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 16px"><div><label>Password <span style="color:#a12622">*</span></label><input name="pw" type="password" minlength="8" autocomplete="new-password" required></div><div><label>Confirm password <span style="color:#a12622">*</span></label><input name="pw2" type="password" minlength="8" autocomplete="new-password" required></div></div>
+<p class="m" style="margin-bottom:0">At least 8 characters with a letter and a digit.</p></div>{% endif %}
+{% set rel=false %}{% set consent=true %}{% set selfphone=is_self %}{% include '_pform.html' %}
+<button>Save and continue</button> <a class="btn g" href="/home">Cancel</a></form></div>
+<style>.wiz2{display:flex;flex-wrap:wrap;gap:8px}.wiz2 span{padding:5px 14px;border-radius:99px;background:#e8edf3;color:#5f6b7a;font-size:.85rem;font-weight:600}.wiz2 .done{background:#dbe8f7;color:#0a3569}.wiz2 .on{background:#0a3569;color:#fff}</style>{% endblock %}

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block body %}<h2>Staff ID cards</h2>
+<p class="m">Every staff member signs in with phone + password + their ID card. Issuing a new card cancels the old one. Revoking a card signs that person out immediately.{% if not required %} <b style="color:#b02a25">ID-card check is currently OFF (test mode).</b>{% endif %}</p>
+<div class="c"><div class="tw"><table><tr><th>Name</th><th>Role</th><th>Phone</th><th>Card</th><th>Status</th><th>Last used</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.name }}</td><td>{{ r.role }}{% if r.dept %}<div class="m">{{ r.dept }}</div>{% endif %}</td><td>{{ r.phone }}</td><td>{{ r.card_no or '-' }}</td>
+<td>{% if not r.card_no %}<span class="tag" style="background:var(--w)">No card</span>{% elif r.status=='active' %}<span class="tag" style="background:var(--ok)">Active</span>{% else %}<span class="tag" style="background:var(--no)">Revoked</span>{% endif %}</td><td>{{ r.last_used or '-' }}</td>
+<td style="white-space:nowrap"><form method="post" action="/admin/cards/issue/{{ r.id }}" style="display:inline"><input type="hidden" name="csrf" value="{{ csrf() }}"><button>{{ 'Replace card' if r.card_no else 'Issue card' }}</button></form>
+{% if r.card_no and r.status=='active' %}<form method="post" action="/admin/cards/revoke/{{ r.id }}" style="display:inline"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="d">Revoke</button></form>{% endif %}</td></tr>{% endfor %}</table></div></div>{% endblock %}

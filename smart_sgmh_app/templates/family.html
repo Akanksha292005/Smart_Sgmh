@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block body %}<h1 style="font-size:2rem">My family</h1><p class="m">Everyone you book for. Each person has their own UHID and medical history.</p>
+<div class="row" style="margin-top:14px">{% for r in rows %}<div class="c"><div style="display:flex;justify-content:space-between;gap:8px"><div><b style="font-size:1.1rem">{{ r.name }}</b><div class="m">{{ r.relation }} &middot; {{ pdesc(r) }}</div></div><span class="tag" style="background:var(--p)">{{ r.uhid }}</span></div>
+<p class="m" style="margin:8px 0">{{ r.category }}{% if r.allergies %} &middot; <span>Allergy:</span> {{ r.allergies }}{% endif %}</p>
+{% for x in r.pr %}<span class="lvl lv-normal">{{ x }}</span> {% endfor %}
+{% if r.miss %}<div class="f"><span>Please complete:</span> {{ r.miss|join(', ') }}</div>{% endif %}
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><a class="btn" href="/book?pid={{ r.id }}">Book</a><a class="btn g" href="/patients/{{ r.id }}/edit">Edit</a>
+{% if r.relation!='Self' %}<form method="post" action="/patients/{{ r.id }}/remove" onsubmit="return confirm('Remove this profile?')"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="g">Remove</button></form>{% endif %}</div></div>{% endfor %}</div>
+{% if not full %}<p><a class="btn" href="/patients/new">+ Add a family member</a></p>{% endif %}{% endblock %}

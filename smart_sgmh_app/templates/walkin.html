@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block body %}<h2>Walk-in OPD visit</h2>
+<div class="c"><b style="font-size:1.1rem">{{ p.name }}</b> <span class="m">{{ p.uhid }} &middot; {{ pdesc(p) }} &middot; {{ p.category }}</span>
+{% if pr %}<p>{% for x in pr %}<span class="lvl lv-normal">{{ x }}</span> {% endfor %} <span class="m">goes first in the queue</span></p>{% endif %}
+{% if p.allergies %}<div class="alertbar"><span>ALLERGY:</span> {{ p.allergies }}</div>{% endif %}
+{% if miss %}<div class="f"><span>Details missing:</span> {{ miss|join(', ') }}</div>{% endif %}
+{% if not opd_open %}<div class="f">OPD is closed right now (Mon-Sat, 8 AM - 4 PM). Register only if the doctor agrees to see the patient.</div>{% endif %}
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}"><label>Doctor</label><select name="doctor" required><option value="">Choose a doctor</option>{% for d in docs %}<option value="{{ d.id }}">{{ d.name }} - {{ d.dept }} ({{ d.label }})</option>{% endfor %}</select>
+<label>Problem (short)</label><input name="reason" value="{{ reason }}" maxlength="200"><label>Type of visit</label><select name="vt"><option value="New">New problem</option><option value="Follow-up">Follow-up visit</option></select>
+{% if preg_ok %}<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="preg" value="1" style="width:auto;margin:0"> Pregnant (priority)</label>{% endif %}
+{% if miss %}<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="force" value="1" style="width:auto;margin:0"> Register anyway (details incomplete)</label>{% endif %}
+<button>Issue token</button> <a class="btn g" href="/staff/patient/{{ p.uhid }}">Back</a></form></div>{% endblock %}

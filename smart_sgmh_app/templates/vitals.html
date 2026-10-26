@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block body %}<h2>Vitals</h2>
+<div class="c"><form method="get" onsubmit="location='/vitals/'+document.getElementById('vc').value.trim().toUpperCase();return false"><label>Patient / appointment code</label><input id="vc" placeholder="AP-XXXXX" required><button>Enter vitals</button></form></div>
+<div class="c"><h2>Patients in hospital today</h2><table><tr><th>Code</th><th>Patient</th><th>Dept</th><th>Status</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.code }}</td><td>{{ r.pname }}</td><td>{{ r.dept }}</td><td>{{ r.status }}</td><td><a href="/vitals/{{ r.code }}">Vitals</a> &middot; <a href="/patient/{{ r.code }}">Summary</a></td></tr>{% else %}<tr><td colspan="5">No patients yet.</td></tr>{% endfor %}</table></div>{% endblock %}

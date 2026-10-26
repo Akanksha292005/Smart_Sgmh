@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% block body %}
+<style>.ch{display:inline-block;border-radius:99px;padding:2px 10px;font-size:.76rem;font-weight:700;margin:2px 4px 2px 0}.ch.g{background:#e0f4e8;color:#17724a}.ch.r{background:#fde9e8;color:#8f1f1b}.ch.y{background:#fff3d6;color:#8a5a00}
+.vq{display:grid;grid-template-columns:230px 1fr;gap:16px}@media(max-width:700px){.vq{grid-template-columns:1fr}}.vq img{width:100%;border-radius:10px;border:1px solid var(--bd)}</style>
+<h2 style="margin-top:6px">ID verification queue</h2>
+<p class="m">Compare the photo with the person in front of you and with the registered name. Software results below are hints, not proof. The photo is deleted when you decide.</p>
+{% for r in rows %}<div class="c vq"><div><a href="/verify/file/{{ r.id }}" target="_blank"><img src="/verify/file/{{ r.id }}" alt="card photo"></a></div>
+ <div><h3 style="margin:0">{{ r.pname }} <span class="m">({{ r.uhid }}, {{ r.phone }})</span></h3><p style="margin:4px 0"><b>{{ label[r.doc_type] }}</b> &middot; {{ r.masked }} &middot; {{ r.created }}</p>
+  <div><span class="ch g">Format valid</span>
+   {% if r.num_found is none %}<span class="ch y">Number: photo not readable</span>{% elif r.num_found==1 %}<span class="ch g">Number found on photo</span>{% else %}<span class="ch r">Number NOT found on photo</span>{% endif %}
+   {% if r.name_score is none %}<span class="ch y">Name: not read</span>{% elif r.name_score>=80 %}<span class="ch g">Name match {{ r.name_score }}%</span>{% else %}<span class="ch r">Name match {{ r.name_score }}%</span>{% endif %}
+   {% if r.dup %}<span class="ch r">Same number on another account</span>{% endif %}</div>
+  <form method="post" action="/admin/verify/{{ r.id }}" style="margin-top:10px"><input type="hidden" name="csrf" value="{{ csrf() }}"><input name="reason" placeholder="Reason (required only if rejecting)" maxlength="200">
+   <button name="decision" value="approve">Approve</button> <button name="decision" value="reject" class="d">Reject</button></form></div></div>
+{% else %}<div class="c m">No documents waiting.</div>{% endfor %}
+{% if done %}<div class="c"><h3 style="margin-top:0">Recently decided</h3><div class="tw"><table><tr><th>Patient</th><th>Document</th><th>Result</th><th>By</th><th>When</th></tr>{% for r in done %}<tr><td>{{ r.pname }}</td><td>{{ label[r.doc_type] }} {{ r.masked }}</td><td>{{ r.status }}{% if r.reason %}: {{ r.reason }}{% endif %}</td><td>{{ r.decided_by }}</td><td>{{ r.decided_ts }}</td></tr>{% endfor %}</table></div></div>{% endif %}
+{% endblock %}

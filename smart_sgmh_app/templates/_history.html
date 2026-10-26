@@ -1,0 +1,8 @@
+{% for h in hist %}<div class="c hv"><div class="hvh"><b>{{ h.date }}</b><span class="tag">{{ h.dept }}</span><span class="m">{{ h.doctor }}{% if h.designation %} ({{ h.designation }}){% endif %}</span>{% if h.pname %}<span class="m">&middot; {{ h.pname }}</span>{% endif %}<a class="m" style="margin-left:auto" href="/visit/{{ h.code }}">Open</a></div>
+{% if h.reason %}<p class="m" style="margin:6px 0">Problem: {{ h.reason }}</p>{% endif %}
+{% if h.diagnosis %}<p style="margin:6px 0"><b>What was found:</b> {{ h.diagnosis }}</p>{% endif %}
+{% if h.tests %}<p style="margin:6px 0"><b>Tests done:</b> {% for t in h.tests %}<span class="pill">{{ t.test }}{% if t.status %} <small>({{ t.status }})</small>{% endif %}</span>{% endfor %}</p>{% endif %}
+{% if h.meds %}<p style="margin:6px 0"><b>Medicines:</b> {{ h.meds }}</p>{% endif %}
+{% if h.followup %}<p style="margin:6px 0"><b>Follow-up:</b> {{ h.followup }}</p>{% endif %}
+{% if not h.diagnosis and not h.tests %}<p class="m" style="margin:6px 0">The doctor's advice will appear here after the doctor approves it.</p>{% endif %}</div>
+{% else %}<div class="c"><p class="m">No visits yet. After your first visit, the date, doctor and what was checked will be saved here.</p></div>{% endfor %}

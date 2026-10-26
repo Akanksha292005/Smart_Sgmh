@@ -1,0 +1,9 @@
+DEMO ONLY. Staff login = phone + password + ID card code (type it, or scan the QR from staff_id_cards.html).
+Delete this file and staff_id_cards.html before any real use, then issue new cards at /admin/cards.
+
+9000000000  admin / admin123       Admin                        ID CARD: SGMH-AD-0001-D66F196B55
+9000000041  doctor / doc123        Dr. Manoj Indurkar           ID CARD: SGMH-DR-0006-8A85F44C1A
+9000000020  lab / lab123           Lab Tech                     ID CARD: SGMH-LB-0004-258DED8D6F
+9000000060  nurse / nurse123       Nurse Station                ID CARD: SGMH-NS-0097-9B1E2E85C0
+9000000030  pharmacy / ph123       Pharmacist                   ID CARD: SGMH-PH-0005-6E6AE3DD80
+9000000010  reception / rec123     Reception Desk               ID CARD: SGMH-RC-0003-49AF925F06

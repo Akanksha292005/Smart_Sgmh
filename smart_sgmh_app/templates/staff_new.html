@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block body %}<div style="max-width:860px;margin:0 auto">
+<h1 style="font-size:2rem">Counter registration</h1>
+<p class="m">For patients who come without booking. Ask for the details and, if the patient agrees, enter them here. The mobile number is optional.</p>
+{% if dups %}<div class="c" style="border-left:4px solid var(--ac)"><b>Similar records already exist</b><div class="tw"><table><tr><th>UHID</th><th>Name</th><th>Age / sex</th><th>Mobile</th><th></th></tr>{% for r in dups %}<tr><td>{{ r.uhid }}</td><td>{{ r.name }}</td><td>{{ pdesc(r) }}</td><td>{{ mask_phone(r.phone) }}</td><td><a class="btn g" style="padding:4px 12px" href="/staff/patient/{{ r.uhid }}">Open</a></td></tr>{% endfor %}</table></div>
+<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="confirm_dup" value="1" form="nf" style="width:auto;margin:0"> This is a different person, register as new</label></div>{% endif %}
+<form method="post" id="nf"><input type="hidden" name="csrf" value="{{ csrf() }}">
+{% set consent=true %}{% include '_pform.html' %}<button>Register and continue</button> <a class="btn g" href="/reception">Cancel</a></form></div>{% endblock %}

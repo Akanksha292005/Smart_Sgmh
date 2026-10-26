@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block body %}<div style="max-width:760px;margin:0 auto"><h1 style="font-size:1.8rem">Reschedule appointment</h1>
+<p class="m">{{ a.code }} &middot; {{ a.pname }} &middot; {{ a.doctor }} ({{ a.dept }}). <span>Now:</span> {{ a.date }} {{ a.slot }}. <span>Changes left:</span> {{ left }}</p>
+<div class="c"><span class="m">Date (Sunday closed)</span><br>{% for x in days %}<a class="pill {{ 'sel' if x.iso==date_iso }}" href="/appt/{{ a.code }}/reschedule?date={{ x.iso }}"><b>{{ x.wd }}</b> <span>{{ x.dm }}</span><br><small>{{ x.free }} <span>free</span></small></a>{% endfor %}
+<form method="post" style="margin-top:12px"><input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="date" value="{{ date_iso }}"><span class="m">Time on {{ date_iso }}</span><br>
+{% for s in slots %}{% if s.state=='free' %}<button name="slot" value="{{ s.slot }}" class="pill" style="font:inherit;cursor:pointer">{{ s.slot }}</button>{% else %}<span class="pill off">{{ s.slot }}</span>{% endif %}{% endfor %}</form></div>
+<a class="btn g" href="/appt/{{ a.code }}">Back</a></div>{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% block body %}
+<style>.vf{display:grid;grid-template-columns:minmax(300px,440px) 1fr;gap:18px;align-items:start}@media(max-width:900px){.vf{grid-template-columns:1fr}}
+.vf .opt{display:flex;gap:10px;margin:6px 0 12px;flex-wrap:wrap}.vf .opt label{flex:1;min-width:150px;border:1.5px solid var(--bd);border-radius:12px;padding:10px 12px;cursor:pointer;margin:0;font-weight:600}.vf .opt input{width:auto;margin:0 8px 0 0}.vf .opt label:has(input:checked){border-color:var(--p);background:var(--p3)}
+.vf .pv{background:var(--p3);border-radius:12px;padding:12px 14px;font-size:.88rem;margin:0 0 12px}.vf .pv li{margin:2px 0}
+.st{display:inline-block;border-radius:99px;padding:3px 11px;font-size:.78rem;font-weight:700}.st.verified{background:#e0f4e8;color:#17724a}.st.pending{background:#fff3d6;color:#8a5a00}.st.rejected{background:#fde9e8;color:#8f1f1b}</style>
+<h2 style="margin-top:6px">Verify ID: {{ me.name }} <span class="m">{{ me.uhid }}</span></h2>{% if profs|length>1 %}<p>{% for x in profs %}<a class="btn {{ '' if x.id==me.id else 'g' }}" style="padding:5px 14px;margin-right:6px" href="/verify?pid={{ x.id }}">{{ x.name }}</a>{% endfor %}</p>{% endif %}
+<p class="m">Verified patients are found faster at the reception, and Ayushman card holders can be guided to the right desk. Staff check the photo against you in person.</p>
+<div class="vf">
+ <div class="c"><form method="post" enctype="multipart/form-data"><input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="pid" value="{{ me.id }}">
+  <label>Which document?</label>
+  <div class="opt"><label><input type="radio" name="doc_type" value="aadhaar" checked>Aadhaar card</label><label><input type="radio" name="doc_type" value="ayushman">Ayushman (PM-JAY) card</label></div>
+  <label>Card number</label><input name="number" inputmode="numeric" autocomplete="off" placeholder="Aadhaar: 12 digits  |  Ayushman: number on card" required>
+  <label>Photo of the card (front side)</label><input type="file" name="photo" accept="image/*" capture="environment" required>
+  <ul class="pv"><li>We keep only the <b>last 4 digits</b>. The full number is never saved.</li><li>Your photo is <b>deleted</b> as soon as staff approve or reject it.</li><li>Photo is checked by software (number and name on the card), then by reception staff.</li></ul>
+  <label style="display:flex;gap:8px;align-items:flex-start;font-weight:500"><input type="checkbox" name="consent" value="1" style="width:auto;margin-top:4px">I agree to share this document for identity checking at SGMH. I know my name must match my account name ({{ me.name }}).</label>
+  <button style="margin-top:12px">Submit for verification</button></form></div>
+ <div class="c"><h3 style="margin-top:0">My documents</h3>
+  {% for r in rows %}<div class="dr" style="padding:10px 0;border-bottom:1px solid var(--bd)"><b>{{ label[r.doc_type] }}</b> &middot; {{ r.masked }} <span class="st {{ r.status }}">{{ {'verified':'Verified by staff','pending':'Waiting for staff check','rejected':'Rejected'}[r.status] }}</span><br>
+   <span class="m">{{ r.created }}{% if r.status=='rejected' and r.reason %} &middot; Reason: {{ r.reason }}{% endif %}</span>
+   {% if r.status=='pending' %}<br><span class="m">Software check: number {{ 'found on photo' if r.num_found==1 else ('not clearly read' if r.num_found is none else 'not matching the photo') }}; name {{ (r.name_score|string + '% match') if r.name_score is not none else 'not read' }}.</span>{% endif %}</div>
+  {% else %}<p class="m">Nothing submitted yet.</p>{% endfor %}
+  <p class="m" style="margin-bottom:0;font-size:.82rem">Prototype note: this is a document check by software and staff. It is not a government e-KYC and does not confirm with UIDAI or NHA that the card is genuine or that Ayushman cover is active.</p></div>
+</div>{% endblock %}

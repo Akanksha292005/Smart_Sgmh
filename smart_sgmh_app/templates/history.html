@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block body %}<h2>My history</h2><p class="m">Every visit: the date, the doctor, and what was checked.</p>
+{% if docs_seen %}<div class="c"><b>Doctors you have consulted</b><div style="margin-top:8px">{% for d in docs_seen %}<a class="pill" href="/book?doctor={{ d.did }}&vt=Follow-up">{{ d.doctor }} <small>({{ d.dept }} &middot; {{ d.n }} <span>visit(s)</span> &middot; <span>last</span> {{ d.last }})</small></a>{% endfor %}</div></div>{% endif %}
+{% include '_history.html' %}{% endblock %}

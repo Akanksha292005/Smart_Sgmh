@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block body %}<div style="max-width:860px;margin:0 auto">
+<h1 style="font-size:2rem">Patient registration</h1>
+<p class="m">Register once and get your Unique Health ID (UHID). Use it for every visit to SGMH. Fields marked <span class="req">*</span> are required.</p>
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="next" value="{{ request.args.get('next','') }}">
+{% set login=true %}{% set consent=true %}{% include '_pform.html' %}
+<button style="font-size:1.05rem;padding:14px 30px">Continue</button> <span class="m">Next step: verify your mobile number with an OTP.</span></form></div>{% endblock %}

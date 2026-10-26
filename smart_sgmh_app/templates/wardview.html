@@ -1,0 +1,21 @@
+{% extends 'base.html' %}{% block body %}
+<h2 style="margin-top:6px">Ward view: {{ ward }}</h2>
+<p class="m">Everything about the patients admitted in this ward, in one place, for the doctors and the duty nurses. Most serious patient first. The page refreshes by itself every 60 seconds.</p>
+<div class="tabs" style="flex-wrap:wrap">{% for w in wards %}<a class="{{ 'on' if w==ward }}" href="/wardview?ward={{ w|urlencode }}">{{ w }} ({{ counts[w] }}){% if crit[w] %} <span class="lvl lv-critical">{{ crit[w] }}</span>{% endif %}</a>{% endfor %}</div>
+{% if mine and ward not in mine %}<p class="m">Your duty ward: <b>{{ mine|join(', ') }}</b>. You are looking at another ward.</p>{% endif %}
+<div class="c"><h3 style="margin-top:0">On duty in this ward</h3>
+<p style="margin:0 0 4px"><b>Doctors:</b> {% for s in doctors %}{{ s.name }}{% if s.dept %} <span class="m">({{ s.dept }})</span>{% endif %} <span class="m">{{ s.shift }}, {{ 'on duty now' if s.on else 'off shift' }}</span>{{ ', ' if not loop.last }}{% else %}<span class="m">nobody set. Ask the admin.</span>{% endfor %}</p>
+<p style="margin:0"><b>Nurses:</b> {% for s in nurses %}{{ s.name }} <span class="m">{{ s.shift }}, {{ 'on duty now' if s.on else 'off shift' }}</span>{{ ', ' if not loop.last }}{% else %}<span class="m">nobody set. Ask the admin.</span>{% endfor %}</p></div>
+<div class="c"><h3 style="margin-top:0">Admitted patients ({{ pts|length }})</h3><div class="tw"><table><tr><th>Bed</th><th>Patient</th><th>Diagnosis / reason</th><th>Doctor</th><th>Latest vitals</th><th>Alerts</th><th>Care team</th><th></th></tr>
+{% for x in pts %}{% set r=x.r %}{% set i=x.i %}{% set t=x.team %}<tr style="{{ 'background:#fdecea' if x.sev==3 else 'background:#fff6e0' if x.sev==2 else '' }}">
+<td><b>{{ r.bed or '-' }}</b></td>
+<td><b>{{ r.pname }}</b> <span class="m">{{ r.code }}</span><div class="m">{{ pdesc(r) }}{% if r.uhid %} &middot; {{ r.uhid }}{% endif %}</div>{% if r.pallergy %}<div style="color:#a12622;font-weight:700;font-size:.82rem">Allergy: {{ r.pallergy }}</div>{% endif %}
+{% if i and i.emergency %}<span class="lvl lv-critical">Emergency {{ i.triage }}</span>{% endif %}{% if i and i.review_pending %}<div style="font-weight:700;color:#a12622">Doctor review pending</div>{% endif %}</td>
+<td>{{ x.dx or r.dept }}{% if r.pcond %}<div class="m">{{ r.pcond }}</div>{% endif %}</td>
+<td>{{ r.doctor }}{% if x.mine %} <span class="pill">my patient</span>{% endif %}</td>
+<td>{% if x.v %}<span class="lvl lv-{{ x.v.level }}">{{ x.v.level }} ({{ x.v.score }})</span><div class="m">BP {{ x.v.bp_sys }}/{{ x.v.bp_dia }} &middot; pulse {{ x.v.pulse }} &middot; SpO2 {{ x.v.spo2 }} &middot; {{ x.v.temp }}&deg;C<br>{{ x.v.ts[5:16] }}</div>{% else %}<span class="m">none yet</span>{% endif %}</td>
+<td>{% if x.al %}<span class="lvl lv-critical">{{ x.al|length }} open</span>{% else %}-{% endif %}</td>
+<td class="m">{% if t %}Duty doctor: {{ t.duty_doctor or '-' }}<br>Nurse: {{ t.nurse or '-' }}{% if t.shift %} ({{ t.shift }}){% endif %}<br>Family: {{ t.fam_name or '-' }}{% if t.fam_rel %} ({{ t.fam_rel }}){% endif %}{% else %}-{% endif %}</td>
+<td><a href="/ipd/{{ r.code }}/chart">Chart</a><br><a href="/ward/{{ r.code }}">Care team</a><br><a href="/vitals/{{ r.code }}">Vitals</a></td></tr>
+{% else %}<tr><td colspan="8">No admitted patients in this ward.</td></tr>{% endfor %}</table></div></div>
+<script>setTimeout(function(){location.reload()},60000)</script>{% endblock %}

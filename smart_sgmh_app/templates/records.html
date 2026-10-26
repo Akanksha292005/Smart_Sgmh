@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block body %}<h2>My records</h2><p class="m">Upload old prescriptions and reports (PDF, JPG or PNG, up to 5 MB). Your doctor can see them when you come for a checkup. Only you and hospital doctors and staff can open them.</p>
+<div class="c"><h3 style="margin-top:0">Add a record</h3><form method="post" enctype="multipart/form-data"><input type="hidden" name="csrf" value="{{ csrf() }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 14px"><div><label>Name of the record</label><input name="title" maxlength="80" placeholder="e.g. Old prescription" required></div>
+<div><label>Date of the record (optional)</label><input name="rec_date" type="date" max="{{ today }}"></div>
+<div><label>For whom</label><select name="pid">{% for p in profs %}<option value="{{ p.id }}">{{ p.name }} ({{ p.relation }})</option>{% endfor %}</select></div>
+<div><label>File</label><input name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></div></div>
+<label>Note (optional)</label><input name="note" maxlength="300" placeholder="e.g. Dr. Sharma, fever, Jan 2026"><button>Upload</button></form></div>
+<div class="c"><div class="tw"><table><tr><th>Record</th><th>For</th><th>Date</th><th>Added</th><th></th></tr>{% for r in recs %}<tr><td><b>{{ r.title }}</b>{% if r.note %}<div class="m">{{ r.note }}</div>{% endif %}</td><td>{{ r.pname }}</td><td>{{ r.rec_date or '-' }}</td><td>{{ r.ts[:10] }}</td>
+<td><a href="/records/{{ r.id }}/file" target="_blank">View</a> <form method="post" action="/records/{{ r.id }}/delete" style="display:inline"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="d" style="padding:3px 10px">Delete</button></form></td></tr>{% else %}<tr><td colspan="5">No records yet.</td></tr>{% endfor %}</table></div></div>{% endblock %}

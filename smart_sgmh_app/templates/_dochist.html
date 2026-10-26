@@ -1,0 +1,3 @@
+{% if hist %}<div class="c" style="margin-top:12px;border-left:4px solid var(--p)"><b>You have seen this doctor before</b>
+{% for h in hist[:3] %}<p style="margin:6px 0">{{ h.date }}{% if h.reason %} &middot; {{ h.reason }}{% endif %}{% if h.diagnosis %} &middot; <span>Found:</span> {{ h.diagnosis }}{% endif %}{% if h.tests %} &middot; <span>Tests:</span> {% for t in h.tests %}{{ t.test }}{{ ', ' if not loop.last }}{% endfor %}{% endif %}</p>{% endfor %}
+<p class="m" style="margin-bottom:0"><a href="{{ u(vt='Follow-up') }}">Book as a follow-up visit</a></p></div>{% endif %}

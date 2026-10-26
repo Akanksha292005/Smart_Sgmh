@@ -1,0 +1,38 @@
+{% set F = ipd_family(a) %}{% set p = F.p %}{% set i = F.info %}
+<div class="c" style="border-left:5px solid var(--p)"><h2 style="margin-top:0">Everything about this stay</h2>
+<p class="m" style="margin:0 0 8px">Complete record of the stay from arrival to discharge: who treated the patient, what was done, and when. Updated {{ F.updated[11:16] }} (refreshes by itself).</p>
+<div class="tw"><table>
+<tr><td><b>Patient</b></td><td>{{ p.name if p else a.pname }}{% if p %} &middot; {{ pdesc(p) }} &middot; UHID {{ p.uhid or '-' }}{% endif %}</td></tr>
+{% if p and (p.blood_group or p.allergies or p.conditions) %}<tr><td><b>Health notes</b></td><td>{% if p.allergies %}<b style="color:#a12622">Allergy: {{ p.allergies }}</b> &middot; {% endif %}{% if p.blood_group %}Blood group {{ p.blood_group }} &middot; {% endif %}{% if p.conditions %}{{ p.conditions }}{% endif %}</td></tr>{% endif %}
+<tr><td><b>Admission</b></td><td>{{ a.adm_type or 'Planned' }}{% if i and i.emergency %} (emergency, triage {{ i.triage }}){% endif %} &middot; {{ a.ward }}{% if a.bed %}, bed {{ a.bed }}{% endif %} &middot; {{ a.dept }}</td></tr>
+<tr><td><b>Treating doctor</b></td><td>{{ a.doctor }}{% if F.opd %} &middot; referred from OPD visit <a href="/visit/{{ F.opd.code }}">{{ F.opd.code }}</a>{% endif %}</td></tr>
+{% if F.duty %}<tr><td><b>On duty now</b></td><td>{% if F.duty.rostered %}Doctor: {{ F.duty.doctors|join(', ') or '-' }} &middot; Nurse: {{ F.duty.nurses|join(', ') or '-' }} <span class="m">({{ F.duty.shift }})</span>{% else %}<span class="m">Nobody is rostered for this shift. The treating doctor above is responsible.</span>{% endif %}</td></tr>{% endif %}
+{% if F.dx %}<tr><td><b>Diagnosis</b></td><td>{{ F.dx }}</td></tr>{% endif %}
+<tr><td><b>Journey</b></td><td>{% for e in F.events %}<span class="tag" style="background:var(--p)">{{ e.cp }}</span> <span class="m">{{ e.ts[5:16] }}</span>{{ ' &rarr; '|safe if not loop.last }}{% endfor %}</td></tr></table></div></div>
+
+{% if i and i.emergency %}<div class="c" style="border-left:5px solid #c0392b"><b>Emergency admission</b> (triage {{ i.triage }}): {{ i.complaint }}.
+{% if i.review_pending %}<p style="margin:6px 0 0;color:#a12622;font-weight:700">A doctor has not yet examined the patient. The doctor on duty has been alerted. Waiting {{ F.wait_min }} min.</p>
+{% elif i.reviewed_by %}<p style="margin:6px 0 0">Examined by <b>{{ person(i.reviewed_by) }}</b> at {{ i.reviewed_ts[11:16] }}{% if F.seen_min is not none %} ({{ F.seen_min }} min after arrival){% endif %}.</p>{% endif %}
+{% if i.first_aid %}<p class="m" style="margin:6px 0 0">First aid given on arrival: {{ i.first_aid }}</p>{% endif %}</div>{% endif %}
+
+<div class="c"><h3 style="margin-top:0">Medicines</h3>
+{% if F.meds %}<div class="tw"><table><tr><th>Medicine</th><th>How often</th><th>Doses given</th><th>Status</th></tr>
+{% for m in F.meds %}{% set o=m.o %}<tr><td><b>{{ o.drug }}</b><div class="m">Ordered {{ o.ordered_ts[5:16] }} by {{ person(o.ordered_by) }}{% if not o.active %} &middot; stopped by {{ person(o.stopped_by) }} {{ o.stopped_ts[5:16] }}{% endif %}</div></td><td>{{ m.freq }}</td>
+<td>{% for r in m.recs %}<div style="font-size:.85rem">{{ r.ts[5:16] }}: <b>{{ {'given':'Given','held':'Held','refused':'Refused'}[r.status] }}</b> by {{ person(r.by) }}{% if r.note %} <span class="m">({{ r.note }})</span>{% endif %}</div>{% else %}<span class="m">none yet</span>{% endfor %}</td>
+<td>{% if m.st=='overdue' %}<span class="lvl lv-critical">Delayed {{ m.late_min }} min</span><div class="m">Staff have been alerted</div>{% elif m.st=='due' %}<span class="lvl lv-watch">Due now</span>{% elif m.st=='ok' %}<span class="lvl lv-normal">On time</span><div class="m">next {{ m.due.strftime('%H:%M') }}</div>{% elif m.st=='stopped' %}<span class="m">Stopped</span>{% elif m.st=='prn' %}<span class="m">When needed</span>{% else %}<span class="m">-</span>{% endif %}</td></tr>{% endfor %}</table></div>
+{% else %}<p class="m">No medicine has been ordered in the ward yet.</p>{% endif %}</div>
+
+<div class="c"><h3 style="margin-top:0">Tests</h3>{% for t in F.tests %}<p style="margin:4px 0"><b>{{ t.test }}</b> <span class="m">ordered {{ t.ts[5:16] if t.ts else '' }}</span>: {{ t.status }}{% if t.report %} &middot; {{ t.report }}{% endif %}{% if t.report_file %} &middot; <a href="/report-file/{{ t.id }}" target="_blank" rel="noopener">Open report</a>{% endif %}</p>{% else %}<p class="m">No test ordered yet.</p>{% endfor %}</div>
+
+<div class="c"><h3 style="margin-top:0">Vitals checks</h3>{% if F.vitals %}<div class="tw"><table><tr><th>Time</th><th>BP</th><th>Pulse</th><th>SpO2</th><th>Temp</th><th>Meaning</th><th>Checked by</th></tr>
+{% for v in F.vitals %}<tr><td>{{ v.ts[5:16] }}</td><td>{{ v.bp }}</td><td>{{ v.pulse }}</td><td>{{ v.spo2 }}%</td><td>{{ v.temp }}</td><td><span class="lvl lv-{{ v.level }}">{{ v.words }}</span></td><td>{{ v.by }}</td></tr>{% endfor %}</table></div>{% else %}<p class="m">No vitals recorded yet.</p>{% endif %}</div>
+
+<div class="c"><h3 style="margin-top:0">Doctor and nurse notes</h3>
+{% for n in F.notes %}<div style="border-left:3px solid {{ '#c0392b' if n.kind=='casualty' else 'var(--p)' }};padding:2px 12px;margin:10px 0">
+<b>{{ {'admission':'Admission assessment','round':'Doctor round','procedure':'Procedure / surgery','nursing':'Nursing note','casualty':'Emergency entry'}.get(n.kind, n.kind) }}</b> <span class="m">{{ (n.event_ts or n.ts)[:16] }} &middot; {{ person(n.author) }}{% if n.event_ts and n.event_ts!=n.ts %} (entered {{ n.ts[:16] }}){% endif %}</span>
+{% if n.family_text %}<div style="background:#eef7f0;border-radius:8px;padding:6px 10px;margin:4px 0"><b>In simple words:</b> {{ n.family_text }}</div>{% endif %}
+{% if n.diagnosis %}<div><b>Diagnosis:</b> {{ n.diagnosis }}</div>{% endif %}{% if n.findings %}<div style="white-space:pre-wrap">{{ n.findings }}</div>{% endif %}{% if n.orders %}<div style="white-space:pre-wrap"><b>{{ 'Treatment given' if n.kind=='casualty' else 'Orders' }}:</b> {{ n.orders }}</div>{% endif %}{% if n.plan %}<div style="white-space:pre-wrap"><b>Plan:</b> {{ n.plan }}</div>{% endif %}</div>
+{% else %}<p class="m">No note has been written yet.</p>{% endfor %}</div>
+
+{% if F.alerts %}<div class="c"><h3 style="margin-top:0">Safety alerts and what staff did</h3>{% for x in F.alerts %}<p style="margin:6px 0"><span class="lvl lv-{{ 'critical' if x.level=='critical' else 'watch' }}">{{ x.level }}</span> <span class="m">{{ x.ts[5:16] }}</span> {{ x.message }}<br><span class="m">{% if x.status=='acknowledged' %}Seen by {{ person(x.ack_by) }} at {{ x.ack_ts[11:16] }}{% elif x.status=='escalated' %}Not acknowledged in time: sent to all doctors and nurses{% elif x.status=='closed' %}Resolved{% else %}Staff have been told, waiting for acknowledgement{% endif %}</span></p>{% endfor %}</div>{% endif %}
+{% if F.summary_ok %}<div class="c" style="border-left:5px solid var(--ok)"><b>Discharge summary is ready</b> <a class="btn" href="/ipd/{{ a.code }}/summary">Open / print</a></div>{% endif %}

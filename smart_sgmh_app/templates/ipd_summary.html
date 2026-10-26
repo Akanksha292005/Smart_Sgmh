@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block body %}
+<div class="c"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><div><h2 style="margin:0">Discharge summary</h2><div class="m">Sanjay Gandhi Memorial Hospital, Rewa (M.P.)</div></div><div class="noprint"><button class="btn" onclick="window.print()">Print / Save PDF</button>{% if is_doc %} <a class="btn g" style="background:#fff;color:var(--p);border:1px solid var(--bd)" href="/ipd/{{ a.code }}/summary/edit">Edit</a>{% endif %}</div></div>
+{% if not s.approved %}<div class="alertbar">DRAFT: not approved yet. The patient cannot see this.</div>{% endif %}
+<div class="tw"><table><tr><td><b>Patient</b></td><td>{{ a.pname }} &middot; {{ pdesc(a) }}</td><td><b>UHID</b></td><td>{{ a.uhid or '-' }}</td></tr>
+<tr><td><b>Admission code</b></td><td>{{ a.code }}{% if i and i.emergency %} (Emergency){% endif %}</td><td><b>Ward / bed</b></td><td>{{ a.ward }}{% if a.bed %}, {{ a.bed }}{% endif %}</td></tr>
+<tr><td><b>Admitted</b></td><td>{{ adm[:16] }}</td><td><b>Discharged</b></td><td>{{ dis[:16] if dis else 'Not yet' }}</td></tr>
+<tr><td><b>Doctor</b></td><td>{{ a.doctor }} ({{ a.dept }})</td><td><b>Condition</b></td><td>{{ s.cond }}</td></tr></table></div>
+{% if a.pallergy %}<p><b>Allergy:</b> {{ a.pallergy }}</p>{% endif %}
+<h3>Final diagnosis</h3><p>{{ s.final_dx }}</p><h3>Hospital course</h3><p style="white-space:pre-wrap">{{ s.course }}</p>
+{% if s.procedures %}<h3>Procedures</h3><p style="white-space:pre-wrap">{{ s.procedures }}</p>{% endif %}
+{% if labs %}<h3>Tests</h3>{% for l in labs %}<p style="margin:3px 0"><b>{{ l.test }}</b>: {{ l.report or l.status }}</p>{% endfor %}{% endif %}
+{% if s.meds_home %}<h3>Medicines at home</h3><p style="white-space:pre-wrap">{{ s.meds_home }}</p>{% endif %}
+{% if s.advice %}<h3>Advice</h3><p style="white-space:pre-wrap">{{ s.advice }}</p>{% endif %}
+{% if s.followup_date %}<h3>Follow-up</h3><p>Please come on <b>{{ s.followup_date }}</b>.</p>{% endif %}
+<p class="m" style="margin-top:18px">Prepared by {{ s.by }}{% if s.approved_ts %}, approved {{ s.approved_ts[:16] }}{% endif %}. Computer-generated from the hospital record (sample system).</p></div>{% endblock %}

@@ -1,0 +1,18 @@
+<style>.sv{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:8px 0 18px}.sv a{display:flex;gap:12px;align-items:center;text-decoration:none;background:var(--c);border:1.5px solid var(--bd);border-radius:16px;padding:14px;color:var(--tx);min-height:76px;box-shadow:var(--sh)}.sv a:hover{border-color:var(--p);transform:translateY(-1px)}
+.sv i{font-style:normal;font-size:1.9rem;flex:none;width:46px;height:46px;border-radius:12px;background:var(--p3);display:grid;place-items:center}.sv b{display:block;font-size:1rem;line-height:1.25}.sv small{color:var(--m);font-size:.8rem;line-height:1.3;display:block}.sv a.red{background:#c0392b;border-color:#c0392b;color:#fff}.sv a.red i{background:rgba(255,255,255,.2)}.sv a.red small{color:#ffe3df}</style>
+<h2 style="margin:18px 0 4px">What do you need today?</h2>
+<div class="sv"><a href="/workflow"><i>&#128260;</i><div><b>How it works</b><small>The whole journey on one page</small></div></a>
+{% if not is_staff() %}<a href="/book"><i>&#129658;</i><div><b>See a doctor (OPD)</b><small>Book a free appointment</small></div></a>{% endif %}
+<a class="red" href="tel:112"><i>&#128680;</i><div><b>Emergency</b><small>Call 112 / 108 or go to the Emergency gate</small></div></a>
+<a href="/mine"><i>&#128719;&#65039;</i><div><b>If admitted: ward and bed</b><small>Doctor admits you; see ward, care team</small></div></a>
+<a href="/blood-bank"><i>&#129656;</i><div><b>Blood bank</b><small>Which blood group is available</small></div></a>
+<a href="/navigate"><i>&#128506;&#65039;</i><div><b>Find the way</b><small>ICU, pharmacy, lab, doctor's room</small></div></a>
+<a href="/history"><i>&#128203;</i><div><b>My visits and slips</b><small>Old treatment, tests, medicines</small></div></a>
+<a href="/records"><i>&#128196;</i><div><b>Upload old prescription</b><small>Show it to your doctor</small></div></a>
+<a href="/reports"><i>&#129514;</i><div><b>My reports</b><small>Lab and test results</small></div></a>
+<a href="/medical-store"><i>&#128138;</i><div><b>Medicines in stock</b><small>Check before you go</small></div></a>
+<a href="/lab-services"><i>&#128300;</i><div><b>Tests and lab</b><small>What tests are done here</small></div></a>
+{% if not is_staff() %}<a href="/family"><i>&#128106;</i><div><b>My family</b><small>Book for parents and children</small></div></a>{% endif %}
+<a href="/verify"><i>&#129706;</i><div><b>Verify Aadhaar / Ayushman card</b><small>Optional. Saves time at the counter</small></div></a>
+<a href="/assistant"><i>&#129302;</i><div><b>Ask the assistant</b><small>In Hindi or English. You can speak</small></div></a>
+<a href="/track"><i>&#128205;</i><div><b>Track a patient</b><small>For family waiting outside</small></div></a></div>

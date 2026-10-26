@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block body %}
+<h1 style="font-size:2rem">Bed availability / ICU</h1>
+<p class="m">Counts are shown only after an authorised staff update. Please confirm with the hospital before travelling.</p>
+<div class="tw"><table><thead><tr><th>Unit</th><th>Total</th><th>Occupied</th><th>Not usable</th><th>Available</th><th>Updated</th></tr></thead><tbody id="bb"><tr><td colspan="6" class="m">Loading...</td></tr></tbody></table></div>
+<p id="bn" class="m"></p>
+<script>
+fetch("/api/v1/beds").then(function(r){return r.json()}).then(function(d){
+  var e=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+  document.getElementById("bb").innerHTML=(d.units||[]).map(function(u){
+    return "<tr><td><b>"+e(u.unit)+"</b></td>"+(u.verified?"<td>"+e(u.total)+"</td><td>"+e(u.occupied)+"</td><td>"+e(u.unavailable)+"</td><td><b>"+e(u.available)+"</b></td><td>"+e(u.updated_at)+"</td>":"<td>"+e(u.total)+"</td><td colspan=\"4\" class=\"m\">Not verified yet</td>")+"</tr>"}).join("")||"<tr><td colspan=\"6\" class=\"m\">No data</td></tr>";
+  document.getElementById("bn").textContent=d.note||"";
+}).catch(function(){document.getElementById("bb").innerHTML="<tr><td colspan=\"6\">Could not load bed data. Please try again.</td></tr>"});
+</script>{% endblock %}

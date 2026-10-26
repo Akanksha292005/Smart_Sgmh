@@ -1,0 +1,122 @@
+{% extends 'base.html' %}{% block body %}
+<style>
+.nv{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:18px;align-items:start}@media(max-width:960px){.nv{grid-template-columns:1fr}}
+.nv .c{margin:0 0 14px}.nv h3{margin:0 0 8px;font-size:1.05rem}.nv select,.nv input{margin:4px 0 10px}
+.qk{display:flex;flex-wrap:wrap;gap:6px}.qk .chip{margin:0}.chip.er{background:#fde9e8;color:#b71c1c}.chip.er:hover{background:#c62828;color:#fff}
+#sg{display:none;border:1px solid var(--bd);border-radius:12px;max-height:240px;overflow:auto;margin:-6px 0 10px;background:var(--c)}#sg div{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--bd);font-size:.9rem}#sg div:hover{background:var(--p3)}#sg small{color:var(--m);display:block}
+.ft{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.ft button{background:var(--p3);color:var(--p);padding:8px 16px;position:relative}.ft button.on{background:var(--p);color:#fff}.ft button i{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:#d32f2f;border:2px solid var(--c)}
+#map{width:100%;height:auto;background:var(--bg);border:1px solid var(--bd);border-radius:14px}
+#map text{font-family:Inter,"Noto Sans Devanagari",system-ui,sans-serif;fill:var(--tx);pointer-events:none}
+.rm{stroke-width:1.5;cursor:pointer}.rm:hover{filter:brightness(1.12)}
+.route{fill:none;stroke:#d32f2f;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:14 10;animation:dash 1s linear infinite}@keyframes dash{to{stroke-dashoffset:-24}}
+.me{animation:pu 1.4s infinite}@keyframes pu{50%{r:16;opacity:.45}}
+.sl{counter-reset:s;list-style:none;padding:0;margin:0}.sl li{counter-increment:s;display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--bd);cursor:pointer}.sl li:before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.85rem}.sl li.fl:before{background:var(--ac);content:"\2195"}.sl li.end:before{background:#d32f2f;content:"\2691"}.sl li:hover{background:var(--p3)}.sl small{display:block;color:var(--m)}
+.nsum{display:flex;gap:6px 22px;flex-wrap:wrap;font-weight:700;align-items:baseline}.nsum span{color:var(--m);font-weight:500;font-size:.85rem;margin-left:4px}.nsum .rt{flex-basis:100%;color:var(--tx);font-weight:600;font-size:.92rem}
+.dr{padding:8px 0;border-bottom:1px solid var(--bd);font-size:.92rem}.dr:last-child{border:0}
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--m);margin-top:8px}.lg b{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.emg{background:#fde9e8;border:1px solid #f3b9b4;color:#8a1f1a;padding:12px 16px;border-radius:12px;font-weight:600;margin-bottom:14px}
+</style>
+<h2 style="margin-top:6px" id="ttl">Hospital Map: find any department</h2>
+<div class="emg" id="emg">Emergency? Go straight to the Emergency Gate (east end) or call 112 / 108. Do not wait for this app.</div>
+<div class="nv">
+ <div>
+  <div class="c"><h3 id="l1">1. Where are you now?</h3>
+   <select id="from"></select>
+   <h3 id="l2">2. Where do you want to go?</h3>
+   <input id="q" placeholder="Search: ICU, blood bank, cardiology, pharmacy, Dr. name..." autocomplete="off"><div id="sg"></div>
+   <div class="qk" id="qk"></div></div>
+  <div class="c" id="doc" style="display:none"></div>
+  <div class="c" id="steps" style="display:none"></div>
+ </div>
+ <div>
+  <div class="ft" id="ft"></div>
+  <svg id="map" viewBox="0 0 1000 560"></svg>
+  <div class="lg" id="lg"></div>
+  <p class="m" style="margin-top:10px" id="note">Sample layout for the prototype. The hospital must replace it with its real floor plan (hospital_map.py). In an emergency always follow staff directions.</p>
+ </div>
+</div>
+<script>
+const HI={{ 'true' if lang=='hi' else 'false' }};
+const COL={opd:'#1f6fb8',diag:'#6b7570',pharmacy:'#8fb8e2',emergency:'#d32f2f',critical:'#0a3569',ward:'#a3ada8',service:'#cfd4d1',core:'#3b413d'};
+const CATN={opd:['OPD','ओपीडी'],diag:['Tests & Scans','जाँच'],pharmacy:['Pharmacy','फार्मेसी'],emergency:['Emergency','इमरजेंसी'],critical:['ICU / OT','आईसीयू / ओटी'],ward:['Wards','वार्ड'],service:['Services','सुविधाएँ'],core:['Lift / Stairs','लिफ्ट']};
+const T=(en,hi)=>HI?hi:en,$=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let D,N={},E=[],adj={},from=null,to=null,route=null,floor=0;
+const nm=o=>HI?o.hi:o.name, fn=f=>nm(D.floors[f]);
+const sideOf=(h,s)=>((h>0)==(s==='N'))?T('left','बाएँ'):T('right','दाएँ');
+function build(){
+ D.rooms.forEach(r=>{N[r.id]={id:r.id,floor:r.floor,x:r.cx,y:D.corrY,room:r,name:nm(r)}});D.gates.forEach(g=>{N[g.id]={id:g.id,floor:g.floor,x:g.x,y:g.y,gate:g,name:nm(g)}});
+ Object.keys(N).forEach(k=>adj[k]=[]);const link=(a,b,w)=>{adj[a].push([b,w]);adj[b].push([a,w])};
+ D.floors.forEach((f,i)=>{const ns=Object.values(N).filter(n=>n.floor===i).sort((a,b)=>a.x-b.x);for(let j=1;j<ns.length;j++)link(ns[j-1].id,ns[j].id,Math.abs(ns[j].x-ns[j-1].x)*D.unitM)});
+ for(let i=1;i<D.floors.length;i++)link('core'+(i-1),'core'+i,25);
+}
+function dijkstra(a,b){const dist={[a]:0},prev={},seen=new Set();while(true){let u=null;for(const k in dist)if(!seen.has(k)&&(u===null||dist[k]<dist[u]))u=k;if(u===null)return null;if(u===b)break;seen.add(u);for(const[v,w]of adj[u])if(dist[u]+w<(dist[v]??1e9)){dist[v]=dist[u]+w;prev[v]=u}}
+ const p=[b];while(p[0]!==a)p.unshift(prev[p[0]]);return p}
+function directions(path){const S=[];let m=0;const first=N[path[0]],last=N[path[path.length-1]],L=path.length;
+ const nextMove=i=>{for(let k=i+1;k<L;k++){if(N[path[k]].floor!==N[path[i]].floor)return 0;if(N[path[k]].x!==N[path[i]].x)return N[path[k]].x>N[path[i]].x?1:-1}return 0};
+ const h0=nextMove(0);
+ S.push({t:T('You are here: ','आप यहाँ हैं: ')+first.name+' ('+fn(first.floor)+')',sub:(first.room&&first.room.cat!=='core'&&h0)?T(`Come out of ${nm(first.room)} and turn ${sideOf(h0,first.room.side)}.`,`${nm(first.room)} से बाहर निकलकर ${sideOf(h0,first.room.side)} मुड़ें।`):'',f:first.floor});
+ let i=0,heading=h0;
+ while(i<L-1){const a=N[path[i]],b=N[path[i+1]];
+  if(a.floor!==b.floor){let j=i+1;const up=b.floor>a.floor;while(j<L-1&&N[path[j+1]].floor!==N[path[j]].floor&&(N[path[j+1]].floor>N[path[j]].floor)===up)j++;const tf=N[path[j]].floor,n=Math.abs(tf-a.floor);
+   S.push({t:T(`Take the lift or stairs ${up?'up':'down'} to the ${fn(tf)}${n>1?` (${n} floors)`:''}.`,`लिफ्ट या सीढ़ी से ${fn(tf)} पर ${up?'ऊपर':'नीचे'} जाएँ${n>1?` (${n} मंज़िल)`:''}।`),sub:T('Lifts & Stairs are in the middle of every floor.','लिफ्ट/सीढ़ियाँ हर मंज़िल के बीच में हैं।'),f:tf,fl:1});m+=25*1.2*n;i=j;continue}
+  const h=nextMove(i);if(!h)break;let d=0,pass=[],j=i;
+  while(j<L-1){const p=N[path[j]],q=N[path[j+1]];if(q.floor!==p.floor)break;const dx=q.x-p.x;if(dx!==0&&(dx>0?1:-1)!==h)break;d+=Math.abs(dx)*D.unitM;j++;
+   if(j<L-1&&N[path[j+1]].floor===q.floor&&q.room&&q.room.cat!=='core')pass.push(nm(q.room)+' ('+sideOf(h,q.room.side)+')');
+   if(j===L-1)break}
+  m+=d;heading=h;
+  // rooms standing exactly opposite the start door count as passed
+  S.push({t:d<8?T(`Walk a few steps ${h>0?'towards the Emergency end (east)':'towards the Main Entrance end (west)'}.`,`${h>0?'इमरजेंसी की ओर (पूर्व)':'मुख्य गेट की ओर (पश्चिम)'} कुछ कदम चलें।`):T(`Walk along the main corridor ${h>0?'towards the Emergency end (east)':'towards the Main Entrance end (west)'} for about ${Math.round(d)} m.`,`मुख्य गलियारे में ${h>0?'इमरजेंसी की ओर (पूर्व)':'मुख्य गेट की ओर (पश्चिम)'} लगभग ${Math.round(d)} मीटर चलें।`),sub:pass.length?T('You will pass: ','रास्ते में: ')+pass.join(', '):'',f:a.floor});i=j}
+ if(last.room&&last.room.cat!=='core'){const h=heading||1;S.push({t:T(`${last.name} is on your ${sideOf(h,last.room.side)}. You have arrived.`,`${last.name} आपके ${sideOf(h,last.room.side)} है। आप पहुँच गए।`),sub:'',f:last.floor,end:1})}
+ else S.push({t:T('You have arrived: ','आप पहुँच गए: ')+last.name,sub:'',f:last.floor,end:1});
+ return{S,m}}
+function drawMap(){const f=floor,svg=$('map');let h=`<rect x="20" y="30" width="960" height="500" rx="14" fill="none" stroke="var(--bd)" stroke-width="2"/><rect x="30" y="${D.corrY-25}" width="940" height="50" fill="rgba(128,128,128,.13)"/><text x="500" y="${D.corrY+4}" text-anchor="middle" font-size="11" style="fill:var(--m)" letter-spacing="3">${T('MAIN CORRIDOR','मुख्य गलियारा')}</text>`;
+ D.rooms.filter(r=>r.floor===f).forEach(r=>{const c=COL[r.cat],sel=to===r.id,me=from===r.id;h+=`<g onclick="pick('${r.id}')"><rect class="rm" x="${r.x+3}" y="${r.y}" width="${r.w-6}" height="${r.h}" rx="10" fill="${c}" fill-opacity="${sel?.55:.22}" stroke="${sel?'#d32f2f':c}" stroke-width="${sel?4:1.5}"/>`;
+  const label=nm(r),max=Math.max(7,Math.floor((r.w-14)/(HI?7.5:6.6)));let lines=[],cur='';label.split(' ').forEach(w=>{if((cur+' '+w).trim().length>max&&cur){lines.push(cur);cur=w}else cur=(cur+' '+w).trim()});lines.push(cur);
+  const y0=r.side==='N'?r.y+32:r.y+r.h-26-(lines.length-1)*16;lines.forEach((l,i)=>h+=`<text x="${r.cx}" y="${y0+i*16}" text-anchor="middle" font-size="12.5" font-weight="600">${esc(l)}</text>`);
+  h+=`<rect x="${r.cx-14}" y="${r.side==='N'?r.y+r.h-4:r.y-2}" width="28" height="6" rx="3" fill="${c}"/></g>`});
+ D.gates.filter(g=>g.floor===f).forEach(g=>{h+=`<g onclick="pick('${g.id}')" style="cursor:pointer"><circle cx="${g.x}" cy="${g.y}" r="13" fill="${g.id==='gate_er'?'#d32f2f':'#134a8a'}"/><text x="${g.x}" y="${g.y+4}" text-anchor="middle" font-size="11" style="fill:#fff" font-weight="700">${g.id==='gate_er'?'E':'M'}</text><text x="${g.x+(g.id==='gate_er'?-18:18)}" y="${g.y+4}" text-anchor="${g.id==='gate_er'?'end':'start'}" font-size="10.5" font-weight="700">${esc(nm(g))}</text></g>`});
+ if(route){const pts=route.path.map(id=>N[id]);let seg=[];const flush=()=>{if(seg.length>1){h+=`<polyline class="route" points="${seg.map(n=>{const r=n.room;return n.x+','+n.y}).join(' ')}"/>`}seg=[]};
+  pts.forEach((n,i)=>{if(n.floor===f){if(n.room&&(i===0||i===pts.length-1)&&n.room.cat!=='core'){seg.push({x:n.x,y:n.y});seg.push({x:n.x,y:n.room.side==='N'?n.room.y+n.room.h*0.74:n.room.y+n.room.h*0.30})}else seg.push(n)}else flush()});flush();
+  route.path.forEach((id,i)=>{const n=N[id];if(n.floor===f&&n.room&&n.room.cat==='core'&&i>0&&i<route.path.length-1){const o=route.path[i-1]&&N[route.path[i-1]].floor!==f||route.path[i+1]&&N[route.path[i+1]].floor!==f;if(o)h+=`<circle cx="${n.x}" cy="${n.y}" r="13" fill="#3b413d" stroke="#fff" stroke-width="2.5"/><text x="${n.x}" y="${n.y+4}" text-anchor="middle" font-size="12" font-weight="800" style="fill:#fff">\u2195</text>`}});
+  const s=N[route.path[0]],e=N[route.path[route.path.length-1]];
+  if(s.floor===f){const yy=s.room&&s.room.cat!=='core'?(s.room.side==='N'?s.room.y+s.room.h*.74:s.room.y+s.room.h*.30):s.y;h+=`<circle class="me" cx="${s.x}" cy="${yy}" r="10" fill="#0a3569" stroke="#fff" stroke-width="3"/><text x="${s.x}" y="${yy-18}" text-anchor="middle" font-size="12" font-weight="800" style="fill:#0a3569">${T('YOU','आप')}</text>`}
+  if(e.floor===f){const yy=e.room&&e.room.cat!=='core'?(e.room.side==='N'?e.room.y+e.room.h*.74:e.room.y+e.room.h*.30):e.y;h+=`<path d="M${e.x} ${yy} l-11 -24 a12 12 0 1 1 22 0 z" fill="#d32f2f" stroke="#fff" stroke-width="2"/><circle cx="${e.x}" cy="${yy-27}" r="4.5" fill="#fff"/>`}}
+ svg.innerHTML=h;
+ $('ft').innerHTML=D.floors.map((x,i)=>`<button class="${i===f?'on':''}" onclick="setFloor(${i})">${nm(x)}${route&&route.path.some(id=>N[id].floor===i)?'<i></i>':''}</button>`).join('');
+ const used=new Set(D.rooms.filter(r=>r.floor===f).map(r=>r.cat));$('lg').innerHTML=[...used].map(c=>`<span><b style="background:${COL[c]}"></b>${CATN[c][HI?1:0]}</span>`).join('')+`<span><b style="background:#0a3569;border-radius:50%"></b>${T('You','आप')}</span><span><b style="background:#d32f2f;border-radius:50%"></b>${T('Destination','मंज़िल')}</span>`}
+function setFloor(i){floor=i;drawMap()}
+function pick(id){if(!from){from=id;$('from').value=id}else{to=id}update()}
+function results(t){t=t.toLowerCase().trim();if(!t)return[];const out=[];
+ [...D.rooms,...D.gates].forEach(r=>{if(r.cat==='core')return;const hay=(r.name+' '+r.hi+' '+r.kw+' '+(r.doctors||[]).map(d=>d.name).join(' ')).toLowerCase();if(t.split(/\s+/).every(w=>hay.includes(w)))out.push({id:r.id,t:nm(r),sub:(r.doctors||[]).filter(d=>d.name.toLowerCase().includes(t)).map(d=>d.name).join(', ')||(r.floor!==undefined?fn(r.floor):'')})});
+ D.rooms.forEach(r=>(r.doctors||[]).forEach(d=>{if(d.name.toLowerCase().includes(t)&&!out.find(o=>o.id===r.id&&o.sub.includes(d.name)))out.push({id:r.id,t:d.name+' ('+d.desig+')',sub:nm(r)+', '+fn(r.floor)})}));return out.slice(0,9)}
+function update(){route=null;const sv=$('steps'),dc=$('doc');
+ if(from&&to&&from!==to){const p=dijkstra(from,to);if(p){const{S,m}=directions(p);route={path:p,S};const mins=Math.max(1,Math.round(m/1.2/60));
+  sv.style.display='block';sv.innerHTML=`<h3>${T('Directions','रास्ता')}</h3><div class="nsum"><div>${Math.round(m)} m<span>${T('distance','दूरी')}</span></div><div>~${mins} ${T('min walk','मिनट पैदल')}</div><div class="rt">${esc(nm(N[from]))} &rarr; ${esc(nm(N[to]))}</div></div><ol class="sl" style="margin-top:10px">${S.map((s,i)=>`<li class="${s.fl?'fl':''} ${s.end?'end':''}" onclick="setFloor(${s.f})"><div><b>${esc(s.t)}</b>${s.sub?`<small>${esc(s.sub)}</small>`:''}<small>${fn(s.f)}</small></div></li>`).join('')}</ol><button class="g noprint" style="margin-top:12px" onclick="share()">${T('Copy link to share','लिंक कॉपी करें')}</button> <button class="g noprint" onclick="print()">${T('Print','प्रिंट')}</button>`;
+  floor=N[from].floor}}
+ else sv.style.display='none';
+ const r=N[to]&&N[to].room;if(r&&r.doctors&&r.doctors.length){dc.style.display='block';dc.innerHTML=`<h3>${T('Doctors in','डॉक्टर:')} ${esc(nm(r))}</h3>`+r.doctors.map(d=>`<div class="dr"><b>${esc(d.name)}</b><br><span class="m">${esc(d.desig)} &middot; ${esc(d.degree)}</span></div>`).join('')+`<p class="m" style="margin:8px 0 0">${T('Daily OPD: Mon-Sat, 8 AM - 4 PM. Book a slot online to avoid waiting.','ओपीडी: सोम-शनि, सुबह 8 - शाम 4। इंतज़ार से बचने के लिए ऑनलाइन स्लॉट बुक करें।')} <a href="/doctors">${T('Doctors list','डॉक्टर सूची')}</a></p>`}else dc.style.display='none';
+ hint();drawMap();history.replaceState(null,'','/navigate'+(from&&to?`?from=${from}&to=${to}`:''))}
+function hint(){let fh=$('fh');if(!fh){fh=document.createElement('div');fh.id='fh';fh.className='m';fh.style.margin='8px 0';$('ft').parentNode.insertBefore(fh,$('ft'))}
+ if(!route){fh.innerHTML='';return}const fl=[];route.path.forEach(id=>{const f=N[id].floor;if(fl[fl.length-1]!==f)fl.push(f)});
+ fh.innerHTML=fl.length>1?'<b>'+T('The route goes through several floors: ','रास्ता कई मंज़िलों से होकर जाता है: ')+'</b>'+fl.map(f=>`<button class="g" style="padding:6px 12px;margin:2px" onclick="setFloor(${f})">${fn(f)}</button>`).join(' &rarr; ')+' '+T('(tap a step or a floor to see it on the map)','(नक्शे पर देखने के लिए स्टेप या मंज़िल दबाएँ)'):T('Tap a step to see it on the map.','नक्शे पर देखने के लिए किसी स्टेप को दबाएँ।')}
+function dfind(){const card=(title,rs,doc)=>{const c=document.createElement('div');c.className='c';c.innerHTML=`<h3>${title}</h3><div class="row">`+rs.map(r=>`<div class="c" style="margin:0"><b>${esc(nm(r))}</b><div class="m">${fn(r.floor)}</div>`+(doc?r.doctors.map(d=>`<div style="margin-top:6px">${esc(d.name)}<div class="m">${esc(d.desig)}</div></div>`).join(''):'')+`<button class="g noprint" style="margin-top:10px;padding:8px 14px" onclick="to='${r.id}';update();scrollTo({top:0,behavior:'smooth'})">${T('Show directions','रास्ता दिखाएँ')}</button></div>`).join('')+'</div>';document.querySelector('.w').appendChild(c)};
+ const dr=D.rooms.filter(r=>r.doctors&&r.doctors.length),fc=D.rooms.filter(r=>['diag','pharmacy','critical','emergency'].includes(r.cat));
+ if(dr.length)card(T('Doctors and where they sit','डॉक्टर कहाँ बैठते हैं'),dr,1);if(fc.length)card(T('Tests, pharmacy, ICU and emergency','जाँच, फार्मेसी, आईसीयू और इमरजेंसी'),fc,0)}
+function topfind(){const dr=[];D.rooms.forEach(r=>(r.doctors||[]).forEach(d=>dr.push({d,r})));if(!dr.length)return;
+ const c=document.createElement('div');c.className='c';c.id='dtop';
+ c.innerHTML=`<h3>${T('Find a doctor: which room and which floor','डॉक्टर कहाँ बैठते हैं: कमरा और मंज़िल')}</h3><input id="dq" placeholder="${T('Type a doctor name or department','डॉक्टर का नाम या विभाग लिखें')}" style="margin:8px 0"><div class="tw" style="max-height:230px"><table><thead><tr><th>${T('Doctor','डॉक्टर')}</th><th>${T('Department / room','विभाग / कमरा')}</th><th>${T('Floor','मंज़िल')}</th><th></th></tr></thead><tbody id="dtb"></tbody></table></div>`;
+ $('emg').insertAdjacentElement('afterend',c);
+ const draw=t=>{t=t.toLowerCase().trim();$('dtb').innerHTML=dr.filter(x=>!t||(x.d.name+' '+x.r.name+' '+x.r.hi+' '+x.d.desig).toLowerCase().includes(t)).map(x=>`<tr><td><b>${esc(x.d.name)}</b><div class="m">${esc(x.d.desig)}</div></td><td>${esc(nm(x.r))}</td><td>${esc(fn(x.r.floor))}</td><td><button class="g noprint" style="padding:6px 12px" onclick="to='${x.r.id}';update();scrollTo({top:0,behavior:'smooth'})">${T('Directions','रास्ता')}</button></td></tr>`).join('')||`<tr><td colspan="4">${T('No doctor found.','कोई डॉक्टर नहीं मिला।')}</td></tr>`};
+ $('dq').oninput=e=>draw(e.target.value);draw('')}
+function share(){navigator.clipboard&&navigator.clipboard.writeText(location.href)}
+async function init(){D=await (await fetch('/api/map')).json();build();
+ $('from').innerHTML=D.floors.map((f,i)=>`<optgroup label="${nm(f)}">`+[...D.gates.filter(g=>g.floor===i),...D.rooms.filter(r=>r.floor===i&&r.cat!=='core')].map(o=>`<option value="${o.id}">${esc(nm(o))}</option>`).join('')+'</optgroup>').join('');
+ const p=new URLSearchParams(location.search);from=N[p.get('from')]?p.get('from'):'gate_main';to=N[p.get('to')]?p.get('to'):null;$('from').value=from;
+ $('from').onchange=e=>{from=e.target.value;update()};
+ const Q=[['er',T('Emergency','इमरजेंसी'),1],['icu','ICU','आईसीयू'],['bb',T('Blood Bank','ब्लड बैंक')],['card',T('Cardiology','कार्डियोलॉजी')],['pharm',T('Pharmacy','फार्मेसी')],['path',T('Pathology Lab','पैथोलॉजी')],['radio',T('X-ray / CT','एक्स-रे / सीटी')],['reg',T('Registration','पंजीकरण')],['wc0',T('Toilets','शौचालय')]];
+ $('qk').innerHTML=Q.map(x=>`<span class="chip ${x[2]?'er':''}" onclick="to='${x[0]}';update()">${x[1]}</span>`).join('');
+ $('q').oninput=e=>{const r=results(e.target.value),s=$('sg');s.style.display=r.length?'block':'none';s.innerHTML=r.map(o=>`<div onclick="to='${o.id}';$('sg').style.display='none';$('q').value='';update()">${esc(o.t)}<small>${esc(o.sub)}</small></div>`).join('')};
+ if(HI){$('ttl').textContent='अस्पताल का नक्शा: कोई भी विभाग खोजें';$('emg').textContent='इमरजेंसी? सीधे इमरजेंसी गेट (पूर्व दिशा) जाएँ या 112 / 108 पर कॉल करें। इस ऐप का इंतज़ार न करें।';$('l1').textContent='1. आप अभी कहाँ हैं?';$('l2').textContent='2. कहाँ जाना है?';$('q').placeholder='खोजें: आईसीयू, ब्लड बैंक, कार्डियोलॉजी, दवाई, डॉक्टर का नाम...';$('note').textContent='यह प्रोटोटाइप का नमूना नक्शा है। अस्पताल को इसे असली नक्शे से बदलना होगा। आपात स्थिति में स्टाफ के निर्देश मानें।'}
+ dfind();topfind();update()}
+init();
+</script>{% endblock %}

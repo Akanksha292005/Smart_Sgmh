@@ -1,0 +1,44 @@
+{# Shared patient form. Needs: p (values), getlist, cats, conds, blood, idt, districts, rels. Flags: login (account fields), rel (relationship), consent (consent box), selfphone (phone locked) #}
+<style>.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 16px}.fg .full{grid-column:1/-1}.req{color:#a12622}.chk{display:flex;flex-wrap:wrap;gap:6px 18px;margin:6px 0 14px}.chk label{display:flex;align-items:center;gap:8px;font-weight:500}.chk input{width:auto;margin:0}.hint{font-size:.8rem;color:var(--m);margin:-8px 0 12px}.sect{margin:0 0 6px;font-size:1.05rem}.sect+.hint{margin-top:0}</style>
+{% if login %}<div class="c"><h2 class="sect">Login details</h2><p class="hint">You will use your mobile number and password to log in.</p>
+<div class="fg"><div><label>Mobile number <span class="req">*</span></label><input name="phone" value="{{ p.get('phone','') }}" inputmode="numeric" maxlength="13" placeholder="10-digit mobile" required></div>
+<div><label>Password <span class="req">*</span></label><input name="pw" type="password" minlength="8" autocomplete="new-password" required></div>
+<div><label>Confirm password <span class="req">*</span></label><input name="pw2" type="password" minlength="8" autocomplete="new-password" required></div></div>
+<p class="hint">At least 8 characters with a letter and a digit.</p></div>{% endif %}
+<div class="c"><h2 class="sect">Patient details</h2>
+<div class="fg">
+{% if rel %}<div><label>Relation to you <span class="req">*</span></label><select name="relation">{% for r in rels %}<option value="{{ r }}" {{ 'selected' if p.get('relation')==r }}>{{ r }}</option>{% endfor %}</select></div>{% endif %}
+<div class="{{ '' if rel else 'full' }}"><label>Full name <span class="req">*</span></label><input name="name" value="{{ p.get('name','') or '' }}" maxlength="60" required></div>
+<div><label>Gender <span class="req">*</span></label><select name="gender" required><option value="">Select</option>{% for g in ['Male','Female','Other'] %}<option value="{{ g }}" {{ 'selected' if p.get('gender')==g }}>{{ g }}</option>{% endfor %}</select></div>
+<div><label>Date of birth</label><input type="date" name="dob" value="{{ p.get('dob','') or '' }}" max="{{ today }}"></div>
+<div><label>Or age in years</label><input name="age_years" inputmode="numeric" maxlength="3" value="{{ p.get('age_years','') if p.get('age_years') is not none else '' }}" placeholder="if date of birth is not known"></div>
+<div><label>Father / husband / guardian name</label><input name="guardian_name" value="{{ p.get('guardian_name','') or '' }}" maxlength="60"></div>
+{% if not login %}<div><label>Mobile number</label><input name="phone" value="{{ p.get('phone','') or '' }}" inputmode="numeric" maxlength="13" {{ 'readonly' if selfphone }} placeholder="10-digit mobile"></div>{% endif %}
+</div><p class="hint">For a child under 18, the parent or guardian name is required.</p></div>
+<div class="c"><h2 class="sect">Address</h2><div class="fg">
+<div class="full"><label>Village / ward / locality <span class="req">*</span></label><input name="village_ward" value="{{ p.get('village_ward','') or '' }}" maxlength="80" required></div>
+<div><label>District <span class="req">*</span></label><input name="district" list="dl-dist" value="{{ p.get('district','') or '' }}" maxlength="40" required><datalist id="dl-dist">{% for d in districts %}<option value="{{ d }}">{% endfor %}</datalist></div>
+<div><label>State</label><input name="state" value="{{ p.get('state','') or 'Madhya Pradesh' }}" maxlength="40"></div>
+<div><label>PIN code</label><input name="pin" inputmode="numeric" maxlength="6" value="{{ p.get('pin','') or '' }}"></div></div></div>
+<div class="c"><h2 class="sect">Scheme and category</h2><p class="hint">Documents are checked at the hospital counter. Nothing here is a final decision.</p><div class="fg">
+<div><label>Category</label><select name="category">{% for c in cats %}<option value="{{ c }}" {{ 'selected' if p.get('category')==c }}>{{ c }}</option>{% endfor %}</select></div>
+<div><label>Ayushman Bharat (PM-JAY) card number</label><input name="pmjay" value="{{ p.get('pmjay','') or '' }}" maxlength="25"></div>
+<div><label>ABHA number (14 digits)</label><input name="abha" value="{{ p.get('abha','') or '' }}" maxlength="20" placeholder="optional"></div>
+<div><label>ID proof type</label><select name="id_type"><option value="">None</option>{% for i in idt %}<option value="{{ i }}" {{ 'selected' if p.get('id_type')==i }}>{{ i }}</option>{% endfor %}</select></div>
+<div><label>ID proof: last 4 digits only</label><input name="id_last4" inputmode="numeric" maxlength="4" value="{{ p.get('id_last4','') or '' }}"></div></div>
+<div class="chk"><label><input type="checkbox" name="disabled" value="1" {{ 'checked' if p.get('disabled') }}> Differently-abled (priority in queue)</label></div>
+<p class="hint">We never store your full Aadhaar number. Only the last 4 digits, if you choose to give them.</p></div>
+<div class="c"><h2 class="sect">Health information (helps the doctor)</h2><div class="fg">
+<div><label>Blood group</label><select name="blood_group"><option value="">Do not know</option>{% for b in blood %}<option value="{{ b }}" {{ 'selected' if p.get('blood_group')==b }}>{{ b }}</option>{% endfor %}</select></div>
+<div class="full"><label>Allergies to any medicine or food</label><input name="allergies" value="{{ p.get('allergies','') or '' }}" maxlength="200" placeholder="for example: penicillin, sulfa"></div></div>
+<label>Existing conditions</label><div class="chk">{% for c in conds %}<label><input type="checkbox" name="conditions" value="{{ c }}" {{ 'checked' if c in getlist('conditions') }}> {{ c }}</label>{% endfor %}</div>
+<label>Other condition</label><input name="cond_other" maxlength="60" value="{{ p.get('cond_other','') or '' }}"></div>
+<div class="c"><h2 class="sect">Emergency contact</h2><div class="fg">
+<div><label>Name</label><input name="em_name" value="{{ p.get('em_name','') or '' }}" maxlength="60"></div>
+<div><label>Mobile number</label><input name="em_phone" inputmode="numeric" maxlength="13" value="{{ p.get('em_phone','') or '' }}"></div>
+<div><label>Relation</label><input name="em_rel" value="{{ p.get('em_rel','') or '' }}" maxlength="20"></div>
+<div><label>Preferred language</label><select name="lang"><option value="hi" {{ 'selected' if p.get('lang')!='en' }}>हिन्दी</option><option value="en" {{ 'selected' if p.get('lang')=='en' }}>English</option></select></div></div></div>
+<div class="c"><div class="chk" style="flex-direction:column;gap:10px">
+<label><input type="checkbox" name="sms_ok" value="1" {{ 'checked' if p.get('sms_ok') }}> Send appointment messages and reminders by SMS</label>
+{% if consent %}<label><input type="checkbox" name="consent" value="1" {{ 'checked' if p.get('consent') }} required> <span>I agree that SGMH Rewa may collect and use these details for registration, treatment and hospital administration. I can ask for corrections at any time.</span></label>{% endif %}</div>
+<p class="hint">Your details are used only for your care and are seen only by staff who need them. <a href="/privacy">Privacy notice</a></p></div>

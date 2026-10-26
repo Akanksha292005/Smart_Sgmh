@@ -1,0 +1,7 @@
+{% extends '_gate.html' %}{% block card %}<h2>Enter the OTP</h2><p class="m"><span>OTP sent to</span> {{ phone }}</p>
+{% if demo_otp %}<div class="otp"><span>Demo mode: no SMS gateway yet. Your OTP is</span><b>{{ demo_otp }}</b></div>{% endif %}
+{% if not demo_otp and not off %}<p class="m">SMS can take up to a minute. If it does not come, ask for a new OTP after a short wait.</p>{% endif %}
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}">{% if not off %}<label for="otp">OTP</label><input id="otp" name="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 digits" required autofocus>{% endif %}
+{% if protected %}<label for="pw">Your password</label><input id="pw" name="pw" type="password" autocomplete="current-password" required><p class="m" style="margin-top:6px">This account is protected. Nobody can open it without the OTP and your password.</p>{% endif %}
+<button class="p">{{ 'Login' if not new else 'Continue' }}</button></form>
+<form method="post" style="margin-top:12px"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="l" name="resend" value="1">Send a new OTP</button> &middot; <a href="/start" style="color:#134a8a">Change number</a></form>{% endblock %}

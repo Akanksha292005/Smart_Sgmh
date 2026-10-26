@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block body %}<h2>Find a patient</h2>
+<div class="c"><form method="get" style="display:flex;gap:8px;flex-wrap:wrap"><input name="q" value="{{ s }}" placeholder="UHID, mobile number or name" style="flex:3;margin:0;min-width:220px" autofocus><button>Search</button>{% if full %}<a class="btn g" href="/staff/patients/new">+ Register new patient</a>{% endif %}</form>
+{% if s and s|length>=3 %}<div class="tw" style="margin-top:12px"><table><tr><th>UHID</th><th>Name</th><th>Age / sex</th><th>Mobile</th><th>Category</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.uhid }}</td><td>{{ r.name }}</td><td>{{ pdesc(r) }}</td><td>{{ mask_phone(r.phone) if full else '-' }}</td><td>{{ r.category }}</td><td><a href="/staff/patient/{{ r.uhid }}">Open</a></td></tr>{% else %}<tr><td colspan="6">No patient found.{% if full %} <a href="/staff/patients/new">Register as new</a>{% endif %}</td></tr>{% endfor %}</table></div>{% endif %}
+<p class="m">Every search and every record you open is written to the audit log.</p></div>{% endblock %}

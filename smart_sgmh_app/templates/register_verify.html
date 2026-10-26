@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block body %}<div class="c" style="max-width:460px;margin:20px auto"><h2>Verify your mobile number</h2>
+<p>We sent a 6-digit OTP to <b>{{ phone }}</b>.</p>
+{% if demo_otp %}<div class="f"><b>Demo mode:</b> <span>this prototype cannot send SMS, so the OTP is shown here:</span> <b style="font-size:1.3rem;letter-spacing:.2em">{{ demo_otp }}</b></div>{% endif %}
+{% if not demo_otp %}<p class="m">SMS can take up to a minute. If it does not come, ask for a new OTP after a short wait.</p>{% endif %}
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}"><label>Enter OTP</label><input name="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" autofocus required><button>Verify and finish</button></form>
+<form method="post" style="margin-top:10px"><input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="resend" value="1"><button class="g">Send a new OTP</button></form></div>{% endblock %}

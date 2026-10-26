@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block body %}
+<h2 style="margin-top:6px">Record death and sign certificate</h2>
+<div class="em" style="background:#fff3d6;border-color:#e3b04b;color:#6b4a00">This cannot be edited or deleted after signing. Check every field. The patient record is locked: no new vitals, medicines or lab results can be added afterwards.</div>
+<div class="c"><b style="font-size:1.1rem">{{ a.pname }}</b> {% if a.uhid %}<span class="m">UHID {{ a.uhid }}</span>{% endif %} &middot; {{ a.page }} yrs {{ a.pgender }} &middot; Code {{ a.code }}<br><span class="m">Admitted: {{ adm[:16] }} &middot; Bed {{ a.bed or '-' }} &middot; Treating doctor: {{ a.doctor }}</span>
+<p class="m" style="margin:6px 0 0">Care team now: duty doctor <b>{{ (t.duty_doctor if t else '') or 'not entered' }}</b>, nurse <b>{{ (t.nurse if t else '') or 'not entered' }}</b>, attendant <b>{{ (t.attendant if t else '') or 'not entered' }}</b>, family attendant <b>{{ (t.fam_name if t else '') or 'not entered' }}</b>. <a href="/ward/{{ a.code }}">Update first</a> if wrong: it is copied into the certificate.</p></div>
+<div class="c" style="max-width:680px"><form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}">
+<label>Date and time of death</label><input type="datetime-local" name="death_ts" required value="{{ now }}" min="{{ adm[:16]|replace(' ','T') }}" max="{{ now }}">
+<label>Immediate cause of death</label><input name="cause_immediate" required maxlength="200" placeholder="e.g. Cardio-respiratory arrest">
+<label>Underlying / antecedent cause (if known)</label><input name="cause_underlying" maxlength="200" placeholder="e.g. Acute myocardial infarction">
+<label>Manner of death</label><select name="manner">{% for m in manners %}<option>{{ m }}</option>{% endfor %}</select>
+<p class="m" style="margin:-4px 0 10px">Anything other than Natural is treated as a medico-legal case: the certificate says police intimation is required.</p>
+<label>Your medical registration number</label><input name="regno" required maxlength="40">
+<label>Your password (this applies your digital signature)</label><input type="password" name="password" required autocomplete="current-password">
+<label style="display:flex;gap:8px;align-items:flex-start;font-weight:500"><input type="checkbox" name="certify" value="1" style="width:auto;margin-top:4px">I certify that I personally examined this patient and that the details above are true to the best of my knowledge.</label>
+<button class="d" style="margin-top:12px">Record death and sign</button></form></div>{% endblock %}

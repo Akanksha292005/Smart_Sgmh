@@ -1,0 +1,3 @@
+<!doctype html><html><head><meta charset="utf-8"><title>ID card {{ name }}</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:20px}{{ css|safe }}@media print{.np{display:none}}</style></head><body>
+<p class="np"><b>Shown only once.</b> Print it now and hand it to {{ name }} against a photo ID. The old card (if any) no longer works.</p>{{ card|safe }}
+<p class="np"><button onclick="window.print()">Print card</button> <a href="/admin/cards">Back to all cards</a></p></body></html>

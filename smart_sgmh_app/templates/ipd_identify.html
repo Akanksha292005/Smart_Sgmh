@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block body %}
+<h2 style="margin-top:6px">Identify patient <span class="m">({{ a.code }})</span></h2>
+<p class="m">Current record: <b>{{ p.name }}</b> &middot; {{ p.uhid }}{% if i and i.id_pending %} &middot; <span class="lvl lv-critical">identity pending</span>{% endif %} &middot; Ward {{ a.ward }}{% if a.bed %}, bed {{ a.bed }}{% endif %}</p>
+<div class="row"><div class="c"><h3>Fill in the details</h3><form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}">
+<label>Name</label><input name="name" value="{{ p.name if 'Unknown' not in p.name else '' }}" required>
+<div class="row"><div><label>Sex</label><select name="gender">{% for g in ['Male','Female','Other'] %}<option {{ 'selected' if p.gender==g }}>{{ g }}</option>{% endfor %}</select></div><div><label>Age</label><input name="age_years" type="number" value="{{ p.age_years or '' }}"></div></div>
+<label>Phone</label><input name="phone" inputmode="numeric" value="{{ p.phone or '' }}"><label>Village / ward</label><input name="village_ward" value="{{ p.village_ward or '' }}">
+<label>Allergy</label><input name="allergies" value="{{ p.allergies or '' }}"><label>Blood group</label><input name="blood_group" value="{{ p.blood_group or '' }}">
+<label style="font-weight:400"><input type="checkbox" name="id_ok" value="1" style="width:auto;margin:0 6px 0 0"> Photo ID checked</label><button style="margin-top:8px">Save details</button></form></div>
+{% if p.src=='emergency' %}<div class="c"><h3>Already registered with us?</h3><p class="m">If this patient already has a UHID, link the treatment to that record. The temporary record is closed and all notes stay.</p>
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}"><label>Real UHID</label><input name="real_uhid" placeholder="SGMH-..." required>
+<label style="font-weight:400"><input type="checkbox" name="id_ok" value="1" style="width:auto;margin:0 6px 0 0"> Photo ID checked</label><button style="margin-top:8px">Link to this record</button></form></div>{% endif %}</div>
+{% if session.role!='reception' %}<p><a href="/ipd/{{ a.code }}/chart">Back to chart</a></p>{% endif %}{% endblock %}

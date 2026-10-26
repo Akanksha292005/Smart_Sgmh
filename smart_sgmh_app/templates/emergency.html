@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% block body %}
+<h2 style="margin-top:6px;color:#a12622">Emergency admission</h2>
+<p class="m">For a patient who cannot wait: no booking and no doctor needed first. Fill the minimum. The duty doctor is alerted at once and the patient is marked <b>doctor review pending</b>. Complete the details later (Identify patient).</p>
+<form method="post" class="c" style="border-left:5px solid var(--no)"><input type="hidden" name="csrf" value="{{ csrf() }}">
+<label>Triage level *</label>
+<div style="display:flex;flex-wrap:wrap;gap:8px 18px;margin:4px 0 10px">{% for t,d in triage %}<label style="font-weight:600"><input type="radio" name="triage" value="{{ t }}" style="width:auto;margin:0 6px 0 0" {{ 'checked' if f.get('triage')==t }} required>{{ t }} <span class="m" style="font-weight:400">{{ d }}</span></label>{% endfor %}</div>
+<label>Main problem * (what happened)</label><input name="complaint" value="{{ f.get('complaint','') }}" placeholder="e.g. road accident, chest pain, snake bite, unconscious" required maxlength="300">
+<label>First aid / treatment already given (optional)</label><textarea name="first_aid" rows="2" placeholder="e.g. IV line, oxygen, bleeding controlled">{{ f.get('first_aid','') }}</textarea>
+<div class="row"><div><label>Ward / unit *</label><select name="ward">{% for w in wards %}<option {{ 'selected' if (f.get('ward') or 'ICU / HDU')==w }}>{{ w }}</option>{% endfor %}</select></div>
+<div><label>Bed / trolley no. *</label><input name="bed" value="{{ f.get('bed','') }}" maxlength="20" required></div>
+<div><label>Department for the doctor</label><select name="dept">{% for d in depts %}<option {{ 'selected' if (f.get('dept') or 'Medicine')==d }}>{{ d }}</option>{% endfor %}</select></div></div>
+<hr style="border:0;border-top:1px solid var(--bd);margin:12px 0"><b>Who is the patient?</b>
+<label>Already registered? UHID (leave empty if not known)</label><input name="uhid" value="{{ f.get('uhid','') }}" placeholder="SGMH-26000123">
+<div class="row"><div><label>Name (if known)</label><input name="name" value="{{ f.get('name','') }}" placeholder="empty = Unknown patient"></div>
+<div><label>Sex</label><select name="gender">{% for g in ['Male','Female','Other'] %}<option {{ 'selected' if f.get('gender')==g }}>{{ g }}</option>{% endfor %}</select></div>
+<div><label>Age (approx.)</label><input name="age_years" type="number" min="0" max="120" value="{{ f.get('age_years','') }}"></div></div>
+<label style="font-weight:400"><input type="checkbox" name="known_name" value="1" style="width:auto;margin:0 6px 0 0" {{ 'checked' if f.get('known_name') }}> The name above is confirmed (otherwise the record stays "identity pending")</label>
+<label>Known allergy (optional, very important if known)</label><input name="allergies" value="{{ f.get('allergies','') }}" maxlength="150">
+<div class="row"><div><label>Brought by (relative / police / 108)</label><input name="brought_by" value="{{ f.get('brought_by','') }}" maxlength="60"></div>
+<div><label>Relation</label><input name="brought_rel" value="{{ f.get('brought_rel','') }}" maxlength="30"></div>
+<div><label>Their phone (10 digits)</label><input name="brought_phone" inputmode="numeric" value="{{ f.get('brought_phone','') }}"></div></div>
+<button class="btn" style="background:var(--no);margin-top:10px">ADMIT NOW</button> <a class="btn g" style="background:#fff;color:var(--p);border:1px solid var(--bd)" href="/ipd/board">IPD board</a>
+<p class="m">Photo-ID checks are not required for an emergency. The bed count never blocks an emergency admission. Everything is recorded in the audit log.</p></form>{% endblock %}

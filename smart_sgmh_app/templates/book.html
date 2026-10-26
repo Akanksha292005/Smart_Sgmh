@@ -1,0 +1,37 @@
+{% extends 'base.html' %}{% block body %}
+<h1 style="font-size:2rem">Book a visit</h1>
+<p class="m">OPD is a consultation visit without staying in hospital (Mon-Sat, 8 AM - 4 PM). If the doctor finds that the patient needs to stay in hospital, the doctor admits the patient and you are told the ward and bed. In an emergency, go to the Emergency gate or call 112.</p>
+{% if emergency %}<div class="em">This sounds like it may be an emergency. Do not wait for an appointment: go to the Emergency gate now or call 112 / 108.</div>
+{% else %}<div class="wiz">
+<div class="stepc {{ 'done' if not miss else 'on' }}"><div class="hd"><span class="num">1</span><b>Patient</b><span class="sum">{{ prof.name }} &middot; {{ prof.uhid or 'UHID is issued at registration' }}</span></div>
+<div style="margin-top:10px">{% for x in profs %}<a class="pill {{ 'sel' if x.id==prof.id }}" href="{{ u(pid=x.id,doctor=None,slot=None,dept=None,preg=None) }}">{{ x.name }} <small>({{ x.relation }})</small></a>{% endfor %}<a class="pill" href="/patients/new?next={{ here|urlencode }}">+ Add family member</a></div>
+<p class="m" style="margin-top:8px">{{ pdesc(prof) }} &middot; {{ prof.category }}</p>
+{% if miss %}<div class="f"><span>Please complete these details first:</span> <b>{{ miss|join(', ') }}</b> <a class="btn" style="padding:6px 14px;margin-left:8px" href="{{ '/register/details?pid=%d&next=' % prof.id if prof.relation=='Self' else '/patients/%d/edit?next=' % prof.id }}{{ here|urlencode }}">Complete details</a></div>{% endif %}
+{% if preg_ok %}<div style="margin-top:6px"><span class="m">Is the patient pregnant?</span> <a class="pill {{ 'sel' if preg }}" href="{{ u(preg='1',dept=None,doctor=None,slot=None) }}">Yes</a><a class="pill {{ 'sel' if not preg }}" href="{{ u(preg=None,dept=None,doctor=None,slot=None) }}">No</a></div>{% endif %}
+{% if prio %}<p class="m" style="margin-top:6px"><span>Priority queue:</span> {% for x in prio %}<span class="lvl lv-normal">{{ x }}</span> {% endfor %}</p>{% endif %}</div>
+<div class="stepc {{ 'done' if dept else ('on' if not miss else 'todo') }}"><div class="hd"><span class="num">2</span><b>Department</b>{% if dept %}<span class="sum">{{ dept }}</span>{% endif %}</div>
+<form method="get" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><input type="hidden" name="pid" value="{{ prof.id }}">{% if preg %}<input type="hidden" name="preg" value="1">{% endif %}<input name="reason" value="{{ reason }}" placeholder="Describe the problem (optional)" style="flex:3;margin:0;min-width:220px"><button class="g" style="flex:1">Suggest department</button></form>
+{% if suggestion %}<p class="m"><span>Suggested</span>: <b>{{ suggestion }}</b>{% if sug_why %} <span>because</span> <i>{{ sug_why }}</i>{% endif %}</p>{% endif %}
+<div style="margin-top:8px">{% for x in depts %}<a class="pill {{ 'sel' if x==dept }}" href="{{ u(dept=x,doctor=None,slot=None) }}">{{ x }}</a>{% endfor %}</div></div>
+<div class="stepc {{ 'done' if doc else ('on' if dept else 'todo') }}"><div class="hd"><span class="num">3</span><b>Doctor</b>{% if doc %}<span class="sum">{{ doc.name }}</span>{% endif %}</div>
+{% if not dept %}<p class="m">Choose a department first.</p>{% else %}<div style="margin-top:10px">{% for d in docs %}<a class="dcard {{ 'sel' if doc and d.id==doc.id }} {{ 'off' if d.code=='leave' }}" href="{{ u(doctor=d.id,slot=None,date=None) }}"><div><b>{{ d.name }}</b><div class="m">{{ d.designation or d.dept }}</div></div><span class="tag" style="background:{{ d.color }}">{{ d.label }}</span>{% if d.code=='leave' %}<span class="m">Not available for booking</span>{% elif d.nxt %}<span class="m"><span>Next free slot</span>: <b>{{ d.nxt.when }}</b> <span>{{ d.nxt.slot }}</span></span>{% endif %}{% if d.note %}<span class="m">{{ d.note }}</span>{% endif %}</a>{% endfor %}</div>{% endif %}</div>
+{% if doc %}{% include '_dochist.html' %}{% endif %}
+<div class="stepc {{ 'done' if slot else ('on' if doc else 'todo') }}"><div class="hd"><span class="num">4</span><b>Date and time</b>{% if slot %}<span class="sum">{{ date_iso }} {{ slot }}</span>{% endif %}</div>
+{% if not doc %}<p class="m">Choose a doctor first.</p>{% else %}
+{% if earliest %}<p style="margin:10px 0 0"><a class="btn g" href="{{ u(date=earliest.date,slot=earliest.slot) }}">Earliest available: {{ earliest.date }} {{ earliest.slot }}</a></p>{% endif %}
+<div style="margin-top:10px"><span class="m">Date (Sunday closed)</span><br>{% for x in days %}{% if x.full %}<span class="pill off"><b>{{ x.wd }}</b> <span>{{ x.dm }}</span></span>{% else %}<a class="pill {{ 'sel' if x.iso==date_iso }}" href="{{ u(date=x.iso,slot=None) }}">{% if x.rel %}<b>{{ x.rel }}</b>{% else %}<b>{{ x.wd }}</b> <span>{{ x.dm }}</span>{% endif %}<br><small>{{ x.free }} <span>free</span>{% if x.free is not none and x.free<=6 %} &middot; <span>Few left</span>{% endif %}</small></a>{% endif %}{% endfor %}</div>
+<div style="margin-top:10px"><span class="m">Time</span><br>{% for s in slots %}{% if s.state=='free' %}<a class="pill {{ 'sel' if s.slot==slot }}" href="{{ u(slot=s.slot) }}">{{ s.slot }}</a>{% else %}<span class="pill off">{{ s.slot }}</span>{% endif %}{% endfor %}</div>
+{% if not free_n %}<div class="em" style="margin-top:10px">No free time is left on this day. Please pick another day.</div>{% else %}<p class="m">Crossed-out times are already booked or have passed.</p>{% endif %}{% endif %}</div>
+<div class="stepc {{ 'on' if slot and not miss else 'todo' }}"><div class="hd"><span class="num">5</span><b>Confirm</b></div>
+{% if not slot or miss %}<p class="m">Complete the steps above to continue.</p>{% else %}
+<div class="tw" style="max-height:none"><table><tr><th>Patient</th><td>{{ prof.name }} ({{ pdesc(prof) }}) &middot; {{ prof.uhid }}</td></tr><tr><th>Mobile</th><td>{{ mask_phone(prof.phone) }}</td></tr><tr><th>Department</th><td>{{ dept }}</td></tr><tr><th>Doctor</th><td>{{ doc.name }}</td></tr><tr><th>Date</th><td>{{ date_iso }}</td></tr><tr><th>Time</th><td>{{ slot }}</td></tr><tr><th>Category</th><td>{{ prof.category }}</td></tr>
+{% if prio %}<tr><th>Priority</th><td>{{ prio|join(', ') }}</td></tr>{% endif %}</table></div>
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}">{% for k,v in cur.items() if v and k not in ('reason','referred','ref_by','vt') %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+<label>Reason for visit</label><input name="reason" value="{{ reason }}" maxlength="200" placeholder="for example: fever for 3 days">
+<div class="fg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 16px"><div><label>Type of visit</label><select name="vt"><option value="New" {{ 'selected' if vtype=='New' }}>New problem</option><option value="Follow-up" {{ 'selected' if vtype=='Follow-up' }}>Follow-up visit</option></select></div>
+<div><label>Referred by another hospital / health centre?</label><select name="referred"><option value="">No</option><option value="1" {{ 'selected' if referred }}>Yes</option></select></div>
+<div><label>Referred from (name of hospital / centre)</label><input name="ref_by" value="{{ ref_by }}" maxlength="60"></div></div>
+<h3 style="margin:8px 0 4px">Please bring</h3><ul style="margin:0 0 12px">{% for x in bring %}<li>{{ x }}</li>{% endfor %}</ul>
+<p class="m">{{ fee_note }}</p>
+<button>Confirm booking</button></form>
+<p class="m">You will get a QR code and a printable slip. Arrive 15 minutes early. No token or parchi line.</p>{% endif %}</div></div>{% endif %}{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block body %}
+<h2 style="margin-top:6px">Care team: {{ a.pname }} <span class="m">({{ a.code }})</span></h2>
+<p class="m">{{ a.ward }}{% if a.bed %} &middot; Bed {{ a.bed }}{% endif %} &middot; Treating doctor is set at admission. Fill who is on duty now and who is staying with the patient. The patient and family see this on the Visit page.</p>
+<div class="c"><form method="post"><input type="hidden" name="csrf" value="{{ csrf() }}">
+<label>Duty doctor now</label><input name="duty_doctor" value="{{ t.duty_doctor if t else '' }}" placeholder="e.g. Dr. A. Sharma (Resident)">
+<label>Duty nurse now</label><input name="nurse" value="{{ t.nurse if t else '' }}" placeholder="e.g. Sister R. Singh">
+<label>Ward attendant (hospital staff)</label><input name="attendant" value="{{ t.attendant if t else '' }}" placeholder="e.g. Ramu (ward boy)">
+<label>Shift</label><select name="shift">{% for s in ['Morning (8 AM - 2 PM)','Evening (2 PM - 8 PM)','Night (8 PM - 8 AM)'] %}<option {{ 'selected' if t and t.shift==s }}>{{ s }}</option>{% endfor %}</select>
+<hr style="border:0;border-top:1px solid var(--bd);margin:12px 0"><b>Family attendant staying with the patient</b>
+<label>Name</label><input name="fam_name" value="{{ t.fam_name if t else '' }}"><label>Relation</label><input name="fam_rel" value="{{ t.fam_rel if t else '' }}" placeholder="e.g. Son, Wife"><label>Phone (10 digits)</label><input name="fam_phone" inputmode="numeric" value="{{ t.fam_phone if t else '' }}">
+<button style="margin-top:10px">Save care team</button></form>
+{% if t %}<p class="m">Last updated {{ t.updated }} by {{ t.by }}</p>{% endif %}</div>{% endblock %}

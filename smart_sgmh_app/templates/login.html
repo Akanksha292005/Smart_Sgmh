@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block body %}<div class="c" style="max-width:460px"><h2>Staff login</h2>
+<p class="m">For hospital staff only. You need your phone, password <b>and your SGMH ID card</b>.</p>
+<form method="post" autocomplete="off"><input type="hidden" name="csrf" value="{{ csrf() }}"><label>Phone</label><input name="phone" required inputmode="numeric"><label>Password</label><input name="pw" type="password" required>
+{% if card_required %}<label>SGMH ID card code</label><input id="card" name="card" required placeholder="SGMH-DR-0006-XXXXXXXXXX" autocomplete="off" style="text-transform:uppercase">
+<p style="margin:6px 0"><button type="button" id="scanbtn" class="g">Scan ID card QR</button></p><div id="reader" style="width:100%;display:none"></div>{% endif %}
+<button>Login</button></form>
+<p class="m">Patients: <a href="/start">log in or register with an OTP</a>. Lost your card? Tell the admin to cancel it at once.</p></div>
+{% if card_required %}<script src="/static/html5-qrcode.min.js"></script><script>
+var sb=document.getElementById('scanbtn'),rd=document.getElementById('reader'),h5=null;
+sb.onclick=function(){ if(h5){h5.stop().then(function(){rd.style.display='none';h5=null;});return;}
+ rd.style.display='block'; h5=new Html5Qrcode('reader');
+ h5.start({facingMode:'environment'},{fps:10,qrbox:220},function(t){document.getElementById('card').value=t;h5.stop().then(function(){rd.style.display='none';h5=null;});},function(){}).catch(function(){rd.style.display='none';h5=null;alert('Camera not available. Type the card code instead.');});};
+</script>{% endif %}{% endblock %}

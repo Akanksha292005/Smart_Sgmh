@@ -1,0 +1,23 @@
+Smart SGMH (Arogya Path) - access and bed inventory update
+
+Changes in this copy:
+- Public React login page directs patients to the existing OTP-based /start flow.
+- Removed the public staff-login link and visible demo credential text from the served React bundle.
+- Added a separate unlinked staff sign-in route in React source (/app/staff-access); the existing Flask staff login at /login is retained.
+- API role checks no longer allow the admin role to bypass every endpoint's role requirement.
+- Flask page role checks no longer let admin sessions enter every staff-only page.
+- Appointment visit API checks that a doctor can access only appointments assigned to that doctor.
+- Preserved the existing Flask routes, React pages, and database tables/features.
+- Added seven clearly labelled DEMO SAMPLE bed counts in smartsgmh.db; these are fictional presentation values, not real hospital availability.
+
+Bed demo values:
+General Ward: total 100, occupied 65, unavailable 5, available 30
+ICU: total 20, occupied 12, unavailable 2, available 6
+HDU: total 15, occupied 8, unavailable 1, available 6
+Paediatric Ward: total 30, occupied 18, unavailable 2, available 10
+NICU: total 12, occupied 7, unavailable 1, available 4
+PICU: total 10, occupied 5, unavailable 1, available 4
+Maternity Ward: total 25, occupied 14, unavailable 2, available 9
+
+Run start.bat from this folder as before. Staff sign-in form remains at http://127.0.0.1:5000/login.
+The staff dashboard and bed inventory must be tested locally with the intended accounts before any real deployment. This prototype is not an official hospital system.

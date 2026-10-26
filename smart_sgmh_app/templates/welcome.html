@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block body %}<div class="c" style="max-width:520px;margin:20px auto;text-align:center"><span class="eyebrow" style="color:var(--p)">Registration complete</span>
+<h2>Welcome, {{ p.name }}</h2><p class="m">Your Unique Health ID (UHID)</p><div class="big" style="font-size:2rem;letter-spacing:.06em">{{ p.uhid }}</div>
+<img src="/qr/{{ p.uhid }}.png" width="150" alt="QR"><p class="m">Keep this number. Staff can find your record with it.</p>
+<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn" href="/book">Book an appointment</a><a class="btn g" href="/family">My family</a><a class="btn g" href="javascript:window.print()">Print</a></div></div>{% endblock %}

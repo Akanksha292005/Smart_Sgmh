@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Prescription {{ a.code }}</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:30px auto;padding:0 16px;color:#111}
+h1{margin:0}pre{white-space:pre-wrap;font:inherit;border:1px solid #ccc;padding:14px;border-radius:8px}.m{color:#666;font-size:.85rem}button{padding:8px 16px}@media print{button{display:none}}</style></head><body>
+<h1>Smart SGMH, Rewa</h1><p class="m">Digital advice summary (prototype). Not a substitute for the doctor's signed prescription.</p>
+<p><b>Patient:</b> {{ a.pname }} &nbsp; <b>Code:</b> {{ a.code }} &nbsp; <b>Doctor:</b> {{ a.doctor }} ({{ a.dept }}) &nbsp; <b>Date:</b> {{ a.date }}</p>
+{% if note.followup_date %}<p style="background:#eaf6ee;padding:10px;border-radius:8px"><b>Next visit (follow-up):</b> {{ note.followup_date }}</p>{% endif %}
+<pre>{{ note.simplified }}</pre>
+{% if tests %}<h3>Tests and reports</h3>{% for t in tests %}<p><b>{{ t.test }}</b>: {{ t.status }}{% if t.report %}<br>{{ t.report }}{% endif %}{% if t.report_file %}<br><a href="/report-file/{{ t.id }}" target="_blank" rel="noopener">Open PDF report</a>{% endif %}</p>{% endfor %}{% endif %}
+<h3>Medicines handed over by the pharmacy</h3>{% for g in given %}<p>{{ g.name }} <span class="m">batch {{ g.batch }}, {{ g.ts[:16] }}</span></p>{% else %}<p class="m">Not given yet. Show code {{ a.code }} at the hospital pharmacy.</p>{% endfor %}<p class="m">Approved by doctor in the system. Verify with the hospital for official records.</p><button onclick="window.print()">Print / Save as PDF</button></body></html>

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block body %}
+<h2 style="margin-top:6px">Ward duty roster</h2>
+<p class="m">Choose the ward(s) and shift of each nurse and doctor. A serious alert about an admitted patient goes to the patient's own doctor and to the doctors and nurses on duty in <b>that ward</b>; if nobody acknowledges it in time it goes to everyone. A nurse with no ward set sees all alerts, so nothing is lost while the roster is incomplete. Showing {{ staff|length }} of {{ total }} staff, staff with a ward first.</p>
+{% for s in staff %}<form method="post" class="c" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="user_id" value="{{ s.u.id }}">
+<div style="min-width:200px"><b>{{ s.u.name }}</b><div class="m">{{ s.u.role|capitalize }}{% if s.u.dept %} &middot; {{ s.u.dept }}{% endif %}</div></div>
+<div>{% for w in wards %}<label style="margin-right:10px;white-space:nowrap"><input type="checkbox" name="ward" value="{{ w }}" {{ 'checked' if w in s.wards }}> {{ w }}</label>{% endfor %}</div>
+<select name="shift">{% for sh in shifts %}<option {{ 'selected' if sh==s.shift }}>{{ sh }}</option>{% endfor %}</select><button>Save</button></form>{% endfor %}{% endblock %}

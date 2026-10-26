@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% block body %}
+<h2 style="margin-top:6px">Discharge summary: {{ a.pname }} <span class="m">({{ a.code }})</span></h2>
+<p class="m">Prefilled from the chart. Edit it, then tick Approve to release it to the patient. Until approved only staff can see it.</p>
+<form method="post" class="c"><input type="hidden" name="csrf" value="{{ csrf() }}">
+<label>Final diagnosis *</label><input name="final_dx" value="{{ s.final_dx }}" maxlength="250" required>
+<label>Hospital course (what happened and what was done) *</label><textarea name="course" rows="6">{{ s.course }}</textarea>
+<label>Procedures / surgery</label><textarea name="procedures" rows="2">{{ s.procedures }}</textarea>
+<label>Medicines to take at home (one per line: name, dose, days)</label><textarea name="meds_home" rows="4">{{ s.meds_home }}</textarea>
+<label>Advice: diet, rest, warning signs</label><textarea name="advice" rows="3">{{ s.advice }}</textarea>
+<div class="row"><div><label>Follow-up date</label><input type="date" name="followup_date" value="{{ s.followup_date or '' }}"></div><div><label>Condition at discharge</label><select name="cond">{% for c in conds %}<option {{ 'selected' if s.cond==c }}>{{ c }}</option>{% endfor %}</select></div></div>
+<label style="font-weight:600;margin-top:10px"><input type="checkbox" name="approve" value="1" style="width:auto;margin:0 6px 0 0" {{ 'checked' if s.approved }}> I have checked this summary. Approve and show it to the patient.</label>
+<button style="margin-top:8px">Save</button> <a href="/ipd/{{ a.code }}/chart">Back to chart</a></form>{% endblock %}
